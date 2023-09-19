@@ -1,0 +1,6 @@
+This is a database dump from my local setup on this machine. When installing
+prepper, it is best to simply import this into a database which you have
+configured and to go from there.
+
+NOTE: This is not code which deals with the database. This is just a database
+dump for importing onto new hosts.
