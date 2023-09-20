@@ -13,6 +13,8 @@ import (
 	"net/http"
 	"sync"
 	"time"
+
+	"github.com/gin-gonic/gin"
 )
 
 // Session token format definitions.
@@ -118,7 +120,7 @@ func (s *Store) New() Session {
 	return sess
 }
 
-func (s *Store) doStart(w http.ResponseWriter, r *http.Request) Session {
+func (s *Store) doStart(ctx *gin.Context) Session {
 	sess := s.New()
 	c := &http.Cookie{
 		Name:   TokenCookieName,
@@ -126,30 +128,30 @@ func (s *Store) doStart(w http.ResponseWriter, r *http.Request) Session {
 		MaxAge: int(MaxSessionLength.Seconds()),
 	}
 
-	http.SetCookie(w, c)
+	http.SetCookie(ctx.Writer, c)
 	return sess
 }
 
 // Start is called at the beginning of any request which requires access to a
 // session. If a session exists, it is retrieved. Else, a blank session is
 // created and returned, with the necessary cookie having been set.
-func (s *Store) Start(w http.ResponseWriter, r *http.Request) Session {
-	rtok, err := r.Cookie(TokenCookieName)
+func (s *Store) Start(c *gin.Context) Session {
+	rtok, err := c.Cookie(TokenCookieName)
 	if err != nil {
 		// No given cookie. Give one back instead.
-		return s.doStart(w, r)
+		return s.doStart(c)
 	}
 
-	tok, err := ParseToken(rtok.Value)
+	tok, err := ParseToken(rtok)
 	if err != nil {
 		// Bad token. Give back a correct one.
-		return s.doStart(w, r)
+		return s.doStart(c)
 	}
 
 	sess, found := s.Lookup(tok)
 	if !found {
 		// Token that does not exist. Give back one that does.
-		return s.doStart(w, r)
+		return s.doStart(c)
 	}
 
 	return sess
