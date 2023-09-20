@@ -66,6 +66,18 @@ type Session struct {
 
 	// Timestamp of the creation time of this session.
 	Created time.Time
+
+	// Convenience: allows short hand saving
+	store *Store
+}
+
+// Update is a convenience method to update the currently returned session.
+func (s *Session) Update() {
+	if s.store == nil {
+		return
+	}
+
+	s.store.Update(s)
 }
 
 // Session store is a thread safe map between a Session instance and a 32-byte
@@ -112,6 +124,7 @@ func (s *Store) New() Session {
 	sess := Session{
 		Token:   tok,
 		Created: time.Now(),
+		store:   s,
 	}
 
 	s.Lock()
@@ -152,6 +165,11 @@ func (s *Store) Start(c *gin.Context) Session {
 	if !found {
 		// Token that does not exist. Give back one that does.
 		return s.doStart(c)
+	}
+
+	// Just in case of incorrect initialisation
+	if sess.store == nil {
+		sess.store = s
 	}
 
 	return sess
