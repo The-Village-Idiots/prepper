@@ -71,6 +71,11 @@ type Session struct {
 	store *Store
 }
 
+func (s *Session) SignIn(id uint) {
+	s.UserID = id
+	s.SignedIn = true
+}
+
 // Update is a convenience method to update the currently returned session.
 func (s *Session) Update() {
 	if s.store == nil {

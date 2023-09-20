@@ -19,6 +19,7 @@ import (
 
 	"github.com/ejv2/prepper/conf"
 	"github.com/ejv2/prepper/data"
+	"github.com/ejv2/prepper/session"
 
 	"github.com/gin-gonic/gin"
 	"github.com/go-sql-driver/mysql"
@@ -39,6 +40,7 @@ const (
 var (
 	Config   conf.Config
 	Database *gorm.DB
+	Sessions session.Store
 )
 
 func loadConfig() error {
@@ -93,6 +95,26 @@ func initDatabase(c conf.Config) (err error) {
 	return nil
 }
 
+func initRoutes(router *gin.Engine) {
+	// Static assets path
+	router.Static("/assets/", "frontend/static")
+
+	// Site root
+	router.GET("/", handleRoot)
+
+	// Login page
+	router.GET("/login", handleLogin)
+	router.POST("/login", handleLoginAttempt)
+
+	// Dashboard (requires authentication)
+	r := router.Group("/dashboard/")
+	{
+		r.Use(session.Authenticator(&Sessions, true))
+
+		r.GET("/", handleDashboard)
+	}
+}
+
 func main() {
 	// Banner
 	log.Print("Starting Prepper ", VersionString(), "...")
@@ -101,6 +123,9 @@ func main() {
 	if err := loadConfig(); err != nil {
 		log.Fatalln(err)
 	}
+
+	// Init session storage
+	Sessions = session.NewStore()
 
 	// Connect to database
 	if err := initDatabase(Config); err != nil {
@@ -137,11 +162,7 @@ func main() {
 	}
 
 	router.LoadHTMLGlob(PathTemplates + "/*")
-	router.Static("/assets/", "frontend/static")
-
-	router.GET("/", func(ctx *gin.Context) {
-		ctx.HTML(http.StatusOK, "index.gohtml", nil)
-	})
+	initRoutes(router)
 
 	errchan := make(chan error, 1)
 	sigchan := make(chan os.Signal, 1)
