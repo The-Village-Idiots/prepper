@@ -4,6 +4,7 @@
 // lab technicians.
 //
 // Written for A-Level computer science 2024 by Ethan Marshall.
+// Copyright (C) 2023 - Ethan Marshall
 package main
 
 import (
