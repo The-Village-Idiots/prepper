@@ -18,6 +18,7 @@ import (
 	"time"
 
 	"github.com/ejv2/prepper/conf"
+	"github.com/ejv2/prepper/data"
 
 	"github.com/gin-gonic/gin"
 	"github.com/go-sql-driver/mysql"
@@ -104,6 +105,14 @@ func main() {
 	// Connect to database
 	if err := initDatabase(Config); err != nil {
 		log.Fatalln("database connection:", err)
+	}
+	if Config.DebugMode {
+		// Migrate schema if needed
+		log.Println("[WARNING]: Auto migrating database schema...")
+		if Database.AutoMigrate(&data.User{}) != nil {
+			log.Fatalln("Database migration failed")
+		}
+		log.Println("Auto migration complete")
 	}
 	log.Println("Connected to database on", Config.Database.FullAddr())
 
