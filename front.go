@@ -1,7 +1,6 @@
 package main
 
 import (
-	"log"
 	"net/http"
 
 	"github.com/ejv2/prepper/data"
@@ -30,7 +29,6 @@ func handleRoot(c *gin.Context) {
 // logins.
 func handleLogin(c *gin.Context) {
 	s := Sessions.Start(c)
-	log.Println(Sessions)
 	defer s.Update()
 
 	_, fail := c.GetQuery("error")
