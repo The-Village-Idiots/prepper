@@ -1,0 +1,58 @@
+/* Part of Prepper
+ * Copyright (C) 2023 - Ethan Marshall
+ *
+ * Login page styles
+ */
+
+html, body {
+	padding: 0px;
+	margin: 0px;
+	min-width: 100vw;
+	min-height: 100vh;
+	background-image: url("/assets/lab-background.jpg");
+	background-size: cover;
+
+	display: flex;
+	flex-direction: column;
+	justify-content: center;
+	align-items: center;
+}
+
+.login-form {
+	width: 100%;
+	max-width: 400px;
+	padding: 15px;
+	margin: auto;
+	background-color: white;
+	border-radius: 3px;
+	text-align: center;
+}
+
+.login-error {
+	color: red;
+}
+
+input {
+	padding: 5px;
+	width: 95%;
+	min-width: 95%;
+	max-width: 95%;
+	border: 1px solid lightgray;
+	border-radius: 3px;
+	margin: 5px;
+}
+
+button[type="submit"] {
+	background-color: blue;
+	padding: 5px;
+	margin: 0px;
+	margin-top: 5px;
+	margin-bottom: 5px;
+	width: 95%;
+	color: white;
+	min-width: 95%;
+	max-width: 95%;
+	border: 0px solid white;
+	border-radius: 3px;
+	font-weight: bold;
+}

@@ -1,0 +1,23 @@
+<!DOCTYPE html>
+
+<html>
+	<head>
+		{{template "head.gohtml" "Login"}}
+		<link rel="stylesheet" href="/assets/login.css">
+	<head>
+
+	<body>
+		<form class="form login-form" method="POST">
+			<h2>Log in to Prepper</h2>
+
+			{{if .LoginFailed -}}
+			<p class="alert alert-danger"><strong>Login failed</strong> Username or password incorrect</p>
+			{{- end}}
+
+			<input type="username" name="username" placeholder="Username" />
+			<input type="password" name="password" placeholder="Password" />
+
+			<button type="submit">Login</button>
+		</form>
+	</body>
+</html>
