@@ -139,6 +139,7 @@ func (s *Store) doStart(ctx *gin.Context) Session {
 		Name:   TokenCookieName,
 		Value:  sess.Token.String(),
 		MaxAge: int(MaxSessionLength.Seconds()),
+		Path:   "/",
 	}
 
 	http.SetCookie(ctx.Writer, c)
