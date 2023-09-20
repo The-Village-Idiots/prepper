@@ -63,3 +63,9 @@ type Database struct {
 	Username string `json:"username"`
 	Password string `json:"password"`
 }
+
+// FullAddr returns the full formatted address which the GORM constructor will
+// accept.
+func (d Database) FullAddr() string {
+	return fmt.Sprint(d.Hostname, ":", d.Port)
+}

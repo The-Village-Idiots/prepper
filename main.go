@@ -17,7 +17,12 @@ import (
 	"time"
 
 	"github.com/ejv2/prepper/conf"
+
 	"github.com/gin-gonic/gin"
+	"github.com/go-sql-driver/mysql"
+	gormsql "gorm.io/driver/mysql"
+	"gorm.io/gorm"
+	"gorm.io/gorm/logger"
 )
 
 // Core application paths.
@@ -30,7 +35,8 @@ const (
 )
 
 var (
-	Config conf.Config
+	Config   conf.Config
+	Database *gorm.DB
 )
 
 func loadConfig() error {
@@ -51,6 +57,40 @@ func loadConfig() error {
 	return nil
 }
 
+func initDatabase(c conf.Config) (err error) {
+	cfg := mysql.Config{
+		Addr:                 c.Database.FullAddr(),
+		DBName:               c.Database.Database,
+		User:                 c.Database.Username,
+		Passwd:               c.Database.Password,
+		Net:                  "tcp",
+		ParseTime:            true,
+		AllowNativePasswords: true,
+		RejectReadOnly:       true,
+		Params: map[string]string{
+			"charset": "utf8mb4",
+		},
+	}
+
+	lvl := logger.Warn
+	if c.DebugMode {
+		lvl = logger.Info
+	}
+
+	lg := logger.New(log.Default(), logger.Config{
+		LogLevel:                  lvl,
+		Colorful:                  c.DebugMode,
+		IgnoreRecordNotFoundError: !c.DebugMode,
+	})
+
+	Database, err = gorm.Open(gormsql.Open(cfg.FormatDSN()), &gorm.Config{Logger: lg})
+	if err != nil {
+		return err
+	}
+
+	return nil
+}
+
 func main() {
 	// Banner
 	log.Print("Starting Prepper ", VersionString(), "...")
@@ -59,6 +99,12 @@ func main() {
 	if err := loadConfig(); err != nil {
 		log.Fatalln(err)
 	}
+
+	// Connect to database
+	if err := initDatabase(Config); err != nil {
+		log.Fatalln("database connection:", err)
+	}
+	log.Println("Connected to database on", Config.Database.FullAddr())
 
 	// Setup gin debug mode
 	if !Config.DebugMode {
