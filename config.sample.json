@@ -2,10 +2,10 @@
 	"address": "localhost",
 	"port": 8080,
 	"debug": true,
-	"databse": {
+	"database": {
 		"hostname": "localhost",
 		"port": 3306,
-		"databse": "prepper",
+		"database": "prepper",
 		"username": "prepper",
 		"password": "prepper1234"
 	}
