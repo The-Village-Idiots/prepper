@@ -14,6 +14,10 @@
 			<p class="alert alert-danger"><strong>Login failed</strong> Username or password incorrect</p>
 			{{- end}}
 
+			{{if .LoggedOut -}}
+			<p class="alert alert-info">You are now signed out</p>
+			{{- end}}
+
 			<input type="username" name="username" placeholder="Username" />
 			<input type="password" name="password" placeholder="Password" />
 

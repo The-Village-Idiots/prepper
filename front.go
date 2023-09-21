@@ -32,9 +32,11 @@ func handleLogin(c *gin.Context) {
 	defer s.Update()
 
 	_, fail := c.GetQuery("error")
+	_, out := c.GetQuery("out")
 
 	c.HTML(http.StatusOK, "login.gohtml", gin.H{
 		"LoginFailed": fail,
+		"LoggedOut":   out,
 	})
 }
 
@@ -71,4 +73,16 @@ func handleLoginAttempt(c *gin.Context) {
 	s.Update()
 
 	c.Redirect(http.StatusFound, "/dashboard/")
+}
+
+// handleLogout is the handler for "/logout"
+//
+// Resets the current session to defaults for a non-authenticated user.
+func handleLogout(c *gin.Context) {
+	s := Sessions.Start(c)
+
+	s.Logout()
+	s.Update()
+
+	c.Redirect(http.StatusFound, "/login?out")
 }

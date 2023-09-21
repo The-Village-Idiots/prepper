@@ -106,6 +106,9 @@ func initRoutes(router *gin.Engine) {
 	router.GET("/login", handleLogin)
 	router.POST("/login", handleLoginAttempt)
 
+	// Logout page
+	router.GET("/logout", handleLogout)
+
 	// Dashboard (requires authentication)
 	r := router.Group("/dashboard/")
 	{

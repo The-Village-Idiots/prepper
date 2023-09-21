@@ -76,6 +76,11 @@ func (s *Session) SignIn(id uint) {
 	s.SignedIn = true
 }
 
+func (s *Session) Logout() {
+	s.UserID = 0
+	s.SignedIn = false
+}
+
 // Update is a convenience method to update the currently returned session.
 func (s *Session) Update() {
 	if s.store == nil {
