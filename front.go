@@ -32,6 +32,11 @@ func handleLogin(c *gin.Context) {
 	s := Sessions.Start(c)
 	defer s.Update()
 
+	if s.SignedIn {
+		c.Redirect(http.StatusFound, "/dashboard/")
+		return
+	}
+
 	_, fail := c.GetQuery("error")
 	_, out := c.GetQuery("out")
 
@@ -46,6 +51,10 @@ func handleLogin(c *gin.Context) {
 // This is used to submit the form result and always returns status 302.
 func handleLoginAttempt(c *gin.Context) {
 	s := Sessions.Start(c)
+	if s.SignedIn {
+		c.AbortWithStatus(http.StatusBadRequest)
+		return
+	}
 
 	if s.SignedIn {
 		c.Redirect(http.StatusFound, "/dashboard/")
