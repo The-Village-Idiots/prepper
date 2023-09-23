@@ -1,6 +1,7 @@
 package main
 
 import (
+	"log"
 	"net/http"
 
 	"github.com/ejv2/prepper/data"
@@ -60,11 +61,13 @@ func handleLoginAttempt(c *gin.Context) {
 	us := data.User{Username: frm.Username}
 	err := Database.Where(&us).First(&us).Error
 	if err != nil {
+		log.Print("Login attempt failed for username \"", frm.Username, "\" (bad username)")
 		c.Redirect(http.StatusFound, "/login?error")
 		return
 	}
 
 	if !us.Password.Matches(frm.Password) {
+		log.Print("Login attempt failed for user \"", us.Username, "\" (bad password)")
 		c.Redirect(http.StatusFound, "/login?error")
 		return
 	}
