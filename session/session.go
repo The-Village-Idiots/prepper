@@ -105,6 +105,16 @@ func NewStore() Store {
 	}
 }
 
+// Len returns the length of the current session database. Believe it or not,
+// this is not a cheap call, so please don't use it really often and never use
+// it to cycle the database!
+func (s *Store) Len() int {
+	s.RLock()
+	defer s.RUnlock()
+
+	return len(s.s)
+}
+
 // Lookup finds and returns the session associated with the given token, if one
 // exists.
 func (s *Store) Lookup(t Token) (Session, bool) {
