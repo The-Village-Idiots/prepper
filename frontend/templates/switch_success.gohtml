@@ -1,0 +1,28 @@
+<!DOCTYPE html>
+
+<html>
+	<head>
+		{{template "head.gohtml" "Switch User"}}
+	</head>
+
+	<body>
+		{{template "dashnav.gohtml" .}}
+
+		<div class="container container-fluid mt-3">
+			<h3>Switch User</h3>
+			<hr>
+
+			<div class="mt-3">
+				<p class="alert alert-success">
+					<strong>Switch Success</strong>
+
+					You are now authenticated as {{.User.DisplayName}} (User ID {{.User.ID}}).
+					You may now navigate the site and perform actions as this user.
+
+					<a href="/dashboard/">Go to Dashboard</a>
+					<a href="/logout">Sign out</a>
+				</p>
+			</div>
+		</div>
+	</body>
+</html>

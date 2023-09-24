@@ -119,6 +119,7 @@ func initRoutes(router *gin.Engine) {
 		r.GET("/:id", handleEditAccount)
 		r.GET("/:id/timetable", handleAccountTimetable)
 		r.GET("/new", handleNewAccount)
+		r.GET("/switch", handleAccountSwitch)
 	}
 
 	r = router.Group("/api/")

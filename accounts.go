@@ -114,5 +114,64 @@ func handleNewAccount(c *gin.Context) {
 	c.Redirect(http.StatusFound, "/account/"+strconv.FormatUint(uint64(u.ID), 10))
 }
 
+// handleAccountSwitch is the handler for "/account/switch".
+//
+// Shows an HTML account selection page which allows the choice of which
+// account to impersonate. The switch itself is done by another route.
+func handleAccountSwitch(c *gin.Context) {
+	s := Sessions.Start(c)
+	defer s.Update()
+
+	ddat, err := NewDashboardData(s)
+	if err != nil {
+		internalError(c, err)
+		return
+	}
+
+	if !ddat.User.Can(data.CapImpersonate) {
+		c.String(http.StatusForbidden, "Access Denied")
+		return
+	}
+
+	if c.Query("user") != "" {
+		suid := c.Query("user")
+		uid, err := strconv.ParseUint(suid, 10, 32)
+		if err != nil {
+			c.Redirect(http.StatusFound, "/account/switch?error")
+			return
+		}
+
+		u, err := data.GetUser(Database, uint(uid))
+		if err != nil {
+			c.Redirect(http.StatusFound, "/account/switch?error")
+			return
+		}
+
+		s.SignIn(u.ID)
+		ddat, err = NewDashboardData(s)
+		if err != nil {
+			c.Redirect(http.StatusFound, "/account/switch?error")
+			return
+		}
+
+		c.HTML(http.StatusOK, "switch_success.gohtml", ddat)
+		return
+	}
+
+	users, err := data.GetUsers(Database)
+	if err != nil {
+		internalError(c, err)
+		return
+	}
+
+	_, e := c.GetQuery("error")
+	dat := struct {
+		DashboardData
+		Users []data.User
+		Error bool
+	}{ddat, users, e}
+	c.HTML(http.StatusOK, "switch.gohtml", dat)
+}
+
 func handleAccountTimetable(c *gin.Context) {
 }
