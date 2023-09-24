@@ -2,6 +2,5 @@
 
 trap "pkill prepper" 2 15
 find ./ -name "*.go" -print \
-	     -or -name "*.js" -print \
 	     | entr -cs "pkill prepper; go build .; ./prepper &"
 pkill prepper
