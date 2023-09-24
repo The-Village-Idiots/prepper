@@ -1,7 +1,32 @@
 {{- /* Dashboard navbar template */ -}}
 
-<nav class="navbar sticky-top bg-body-tertiary" data-bs-theme="dark">
+<nav class="navbar navbar-expand-lg sticky-top bg-body-tertiary" data-bs-theme="dark">
 	<div class="container-fluid">
 		<a class="navbar-brand">Prepper</a>
+
+		<button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#dashboardNavCollapse">
+			<span class="navbar-toggler-icon"></span>
+		</button>
+
+		<div class="collapse navbar-collapse" id="dashboardNavCollapse">
+			<div class="navbar-nav">
+				<a class="nav-link" href="/dashboard/">Home</a>
+				<a class="nav-link" href="/dashboard/book">Book</a>
+			</div>
+
+			<div class="navbar-nav ms-auto">
+				<div class="nav-item dropdown">
+					<a class="nav-link dropdown-toggle" href="#" role="button" data-bs-toggle="dropdown">
+						{{.User.Username}}
+					</a>
+
+					<div class="dropdown-menu dropdown-menu-end">
+						<div><a class="dropdown-item" href="/account/{{.User.ID}}">Account Settings</a></div>
+						<div><a class="dropdown-item" href="/account/{{.User.ID}}/timetable">Manage Timetable</a></div>
+						<div><a class="dropdown-item" href="/logout">Logout</a></div>
+					</div>
+				</div>
+			</div>
+		</div>
 	</div>
 </nav>
