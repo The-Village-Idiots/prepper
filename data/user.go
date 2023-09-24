@@ -60,9 +60,9 @@ type User struct {
 	Telephone    string    `json:"telephone"`
 }
 
-// NewUser generates a new dummy user, returning a user object with a valid
-// username and ID such that it can be later updated.
-func NewUser(db *gorm.DB) (User, error) {
+// NewUser generates a new dummy user of the specified role, returning a user
+// object with a valid username and ID such that it can be later updated.
+func NewUser(db *gorm.DB, role UserRole) (User, error) {
 	var u User
 	for newi := 1; newi < 10; newi++ {
 		name := fmt.Sprint("newuser", newi)
@@ -72,7 +72,7 @@ func NewUser(db *gorm.DB) (User, error) {
 			LastName:     "User",
 			Title:        "Mr",
 			PasswordHint: "Default Password",
-			Role:         UserTeacher,
+			Role:         role,
 		}
 
 		// Break when username not found

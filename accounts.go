@@ -86,6 +86,14 @@ func handleNewAccount(c *gin.Context) {
 	s := Sessions.Start(c)
 	defer s.Update()
 
+	role := data.UserTeacher
+	if _, t := c.GetQuery("technician"); t {
+		role = data.UserTechnician
+	}
+	if _, t := c.GetQuery("admin"); t {
+		role = data.UserAdmin
+	}
+
 	us, err := data.GetUser(Database, s.UserID)
 	if err != nil {
 		internalError(c, err)
@@ -97,7 +105,7 @@ func handleNewAccount(c *gin.Context) {
 		return
 	}
 
-	u, err := data.NewUser(Database)
+	u, err := data.NewUser(Database, data.UserRole(role))
 	if err != nil {
 		internalError(c, err)
 		return
