@@ -19,6 +19,7 @@
 					<thead>
 						<tr>
 							<th scope="col">ID</th>
+							<th scope="col">Role</th>
 							<th scope="col">Name</th>
 							<th scope="col">Username</th>
 							<th scope="col">Email</th>
@@ -30,6 +31,7 @@
 						{{range .Users}}
 							<tr>
 								<td>{{.ID}}</td>
+								<td>{{.Role}}</td>
 								<td>{{.Title}}. {{.FirstName}} {{.LastName}}</td>
 								<td>{{.Username}}</td>
 								<td>{{.Email}}</td>
