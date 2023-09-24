@@ -112,3 +112,25 @@ func (u *User) Exists(db *gorm.DB) bool {
 	cpy := *u
 	return db.Where(u).First(&cpy).Error == nil
 }
+
+// DisplayName returns the name which we should prefer to display on the user's
+// end. This is not machine-friendly.
+func (u User) DisplayName() string {
+	// First of all, try the first name
+	if u.FirstName != "" {
+		return u.FirstName
+	}
+
+	// Next try last
+	if u.LastName != "" {
+		// Add title for politeness!
+		if u.Title != "" {
+			return fmt.Sprintf("%s. %s", u.Title, u.LastName)
+		}
+
+		return u.LastName
+	}
+
+	// Finally resort to username
+	return u.Username
+}
