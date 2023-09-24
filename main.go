@@ -110,11 +110,20 @@ func initRoutes(router *gin.Engine) {
 	router.GET("/logout", handleLogout)
 
 	// Dashboard (requires authentication)
-	r := router.Group("/dashboard/")
-	{
-		r.Use(session.Authenticator(&Sessions, true))
+	router.GET("/dashboard/", session.Authenticator(&Sessions, true), handleDashboard)
 
-		r.GET("/", handleDashboard)
+	// Account settings
+	r := router.Group("/account/", session.Authenticator(&Sessions, true))
+	{
+		r.GET("/", handleAccounts)
+		r.GET("/:id", handleEditAccount)
+		r.GET("/:id/timetable", handleAccountTimetable)
+	}
+
+	r = router.Group("/api/")
+	{
+		r.Any("/", handleAPIRoot)
+		r.POST("/user/edit/:id", handleAPIEditUser)
 	}
 }
 

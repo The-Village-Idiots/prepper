@@ -1,0 +1,49 @@
+<!DOCTYPE html>
+
+<html>
+	<head>
+		{{template "head.gohtml" "Manage Account"}}
+
+		<script src="/static/scripts/edit-user.js"></script>
+	</head>
+
+	<body>
+		{{template "dashnav.gohtml" .}}
+
+		<div class="container container-fluid mt-3">
+			<h1>Manage Users</h1>
+			<hr>
+
+			<p>There are currently {{len .Users}} user(s) on the site. There are {{.SessionCount}} ongoing login sessions.</p>
+
+			<div class="mt-4">
+				<table class="table table-striped">
+					<thead>
+						<tr>
+							<th scope="col">ID</th>
+							<th scope="col">Name</th>
+							<th scope="col">Username</th>
+							<th scope="col">Email</th>
+							<th scope="col"></th>
+						</tr>
+					</thead>
+
+					<tbody>
+						<tr>
+							{{range .Users}}
+								<td>{{.ID}}</td>
+								<td>{{.Title}} {{.FirstName}} {{.LastName}}</td>
+								<td>{{.Username}}</td>
+								<td>{{.Email}}</td>
+								<td>
+									<a href="/account/{{.ID}}">Edit</a>
+								</td>
+							{{end}}
+						</tr>
+					</tbody>
+				</table>
+
+			</div>
+		</div>
+	</body>
+</html>

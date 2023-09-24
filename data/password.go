@@ -64,11 +64,19 @@ type Password struct {
 
 // Matches returns true if pw and the hashed password stored by p are the same.
 func (p *Password) Matches(pw string) bool {
+	if p == nil {
+		return false
+	}
+
 	return bcrypt.CompareHashAndPassword(p.hashed, []byte(pw)) == nil
 }
 
 // Value returns the SQLified value for the hashed password buffer.
 func (p *Password) Value() (driver.Value, error) {
+	if p == nil {
+		return "", nil
+	}
+
 	return string(p.hashed), nil
 }
 

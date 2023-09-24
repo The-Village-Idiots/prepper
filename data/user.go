@@ -49,15 +49,15 @@ func (u UserRole) String() string {
 type User struct {
 	*gorm.Model
 
-	Username     string
-	Password     Password
-	PasswordHint string
-	FirstName    string
-	LastName     string
-	Title        string
-	Role         UserRole
-	Email        string
-	Telephone    string
+	Username     string    `json:"username"`
+	Password     *Password `json:"-"`
+	PasswordHint string    `json:"password_hint"`
+	FirstName    string    `json:"first_name"`
+	LastName     string    `json:"last_name"`
+	Title        string    `json:"title"`
+	Role         UserRole  `json:"role"`
+	Email        string    `json:"email"`
+	Telephone    string    `json:"telephone"`
 }
 
 // GetUser selects the first user from the given database with the given user
@@ -100,6 +100,17 @@ func GetUserByName(db *gorm.DB, name string) (User, error) {
 	return u, nil
 }
 
+// GetUsers returns all users stored in the database.
+func GetUsers(db *gorm.DB) ([]User, error) {
+	var us []User
+	res := db.Find(&us)
+	if res.Error != nil {
+		return nil, fmt.Errorf("get users: %w", res.Error)
+	}
+
+	return us, nil
+}
+
 // Calls u.Password.Set with the current user as an argument.
 func (u *User) SetPassword(pw string) error {
 	return u.Password.Set(pw, u)
@@ -117,6 +128,14 @@ func (u *User) Exists(db *gorm.DB) bool {
 // act.
 func (u User) Can(act uint8) bool {
 	return u.Role >= UserRole(act)
+}
+
+func (u User) IsTechnician() bool {
+	return u.Role >= UserTechnician
+}
+
+func (u User) IsAdmin() bool {
+	return u.Role >= UserAdmin
 }
 
 // DisplayName returns the name which we should prefer to display on the user's

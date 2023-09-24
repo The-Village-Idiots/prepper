@@ -1,0 +1,106 @@
+<!DOCTYPE html>
+
+<html>
+	<head>
+		{{template "head.gohtml" "Manage Account"}}
+
+		<script>
+			const userid = {{.TargetUser.ID}};
+		</script>
+		<script src="/assets/scripts/edit-user.js"></script>
+	</head>
+
+	<body>
+		{{template "dashnav.gohtml" .}}
+
+		<div class="container container-fluid mt-3">
+			<h1>Editing user {{.TargetUser.Username}}</h1>
+			<hr>
+
+			<form onsubmit="return saveUser(event)">
+				<div class="mt-4">
+					<h3>Personal Details</h3>
+
+					<div class="row">
+						<!-- Username -->
+						<div class="col">
+							<label for="username" class="form-label">Username:</label>
+							<input name="username" id="username" class="form-control" value="{{.TargetUser.Username}}">
+						</div>
+					</div>
+
+					<div class="row mt-2">
+						<!-- First name -->
+						<div class="col-lg">
+							<label for="first_name" class="form-label">First Name:</label>
+							<input name="first_name" id="first_name" class="form-control" value="{{.TargetUser.FirstName}}">
+						</div>
+
+						<!-- Last name -->
+						<div class="col-lg">
+							<label for="last_name" class="form-label">Last Name:</label>
+							<input name="last_name" id="last_name" class="form-control" value="{{.TargetUser.LastName}}">
+						</div>
+					</div>
+
+				</div>
+
+				<div class="mt-4">
+					<h3>Login Details</h3>
+
+					<div class="row">
+						<div class="col-lg">
+							<label for="password" class="form-label">Password:</label>
+							<input type="password" name="password" id="password" class="form-control" placeholder="Password" {{if not .User.IsAdmin}}disabled{{end}}>
+							<div class="form-text">
+								Passwords cannot be read after they are stored. Only administrators are permitted to change passwords.
+							</div>
+						</div>
+
+						<div class="col-lg">
+							<label for="password_hint" class="form-label">Password Hint:</label>
+							<input name="password_hint" id="password_hint" class="form-control" value="{{.TargetUser.PasswordHint}}">
+						</div>
+					</div>
+				</div>
+
+				<div class="mt-4">
+					<h3>Contact Details</h3>
+
+					<div class="row">
+						<div class="col-lg">
+							<label for="email" class="form-label">Email Address:</label>
+							<input type="email" name="email" id="email" class="form-control" value="{{.TargetUser.Email}}">
+						</div>
+
+						<div class="col-lg">
+							<label for="telephone" class="form-label">Telephone:</label>
+							<input type="tel" name="telephone" id="telephone" class="form-control" value="{{.TargetUser.Telephone}}">
+						</div>
+					</div>
+				</div>
+
+				<div class="mt-4">
+					<div class="row">
+						<button id="saveBtn" type="submit" class="col-auto btn btn-primary">
+							Save
+
+
+							<svg id="saveSuccess" class="d-none" xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-check-lg" viewBox="0 0 16 16">
+							  <path d="M12.736 3.97a.733.733 0 0 1 1.047 0c.286.289.29.756.01 1.05L7.88 12.01a.733.733 0 0 1-1.065.02L3.217 8.384a.757.757 0 0 1 0-1.06.733.733 0 0 1 1.047 0l3.052 3.093 5.4-6.425a.247.247 0 0 1 .02-.022Z"/>
+							</svg>
+
+							<span id="savingSpinner" class="spinner-border text-primary d-none"></span>
+						</button>
+
+						
+					</div>
+
+					<div class="row">
+						<p id="saveFailure" class="text-danger d-none">Data failed to save. Please contact your system administrator.</p>
+					</div>
+				</div>
+			</form>
+		</div>
+	</body>
+</html>
