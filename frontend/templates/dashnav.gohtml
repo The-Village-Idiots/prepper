@@ -11,7 +11,35 @@
 		<div class="collapse navbar-collapse" id="dashboardNavCollapse">
 			<div class="navbar-nav">
 				<a class="nav-link" href="/dashboard/">Home</a>
-				<a class="nav-link" href="/dashboard/book">Book</a>
+				<a class="nav-link" href="/book/">Book</a>
+
+				{{if .User.IsTechnician}}
+					<div class="nav-item dropdown">
+						<a class="nav-link dropdown-toggle" href="#" role="button" data-bs-toggle="dropdown">
+							Inventory
+						</a>
+
+						<div class="dropdown-menu dropdown-menu-end">
+							<div><a class="dropdown-item" href="/inventory/">Manage Items</a></div>
+							<div><a class="dropdown-item" href="/inventory/new">Add New Item</a></div>
+							<div><a class="dropdown-item" href="/inventory/report">Inventory Report</a></div>
+							<div><a class="dropdown-item" href="/inventory/find">Find Item</a></div>
+						</div>
+					</div>
+				{{end}}
+
+				{{if .User.IsAdmin}}
+					<div class="nav-item dropdown">
+						<a class="nav-link dropdown-toggle" href="#" role="button" data-bs-toggle="dropdown">
+							Users
+						</a>
+
+						<div class="dropdown-menu dropdown-menu-end">
+							<div><a class="dropdown-item" href="/account/">Manage Users</a></div>
+							<div><a class="dropdown-item" href="/account/new">New User</a></div>
+						</div>
+					</div>
+				{{end}}
 			</div>
 
 			<div class="navbar-nav ms-auto">
