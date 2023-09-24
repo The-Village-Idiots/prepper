@@ -20,6 +20,8 @@ const (
 	UserAdmin
 )
 
+const DefaultPassword = "DefaultPassword1234"
+
 // User lookup errors.
 var (
 	ErrInvalidID    = errors.New("invalid user ID")
@@ -61,19 +63,20 @@ type User struct {
 }
 
 // NewUser generates a new dummy user of the specified role, returning a user
-// object with a valid username and ID such that it can be later updated.
+// object with a valid username and ID such that it can be later updated. The
+// default password is set to a sensible default. All other fields are left
+// unset.
 func NewUser(db *gorm.DB, role UserRole) (User, error) {
 	var u User
 	for newi := 1; newi < 10; newi++ {
 		name := fmt.Sprint("newuser", newi)
 		u = User{
 			Username:     name,
-			FirstName:    "New",
-			LastName:     "User",
-			Title:        "Mr",
 			PasswordHint: "Default Password",
 			Role:         role,
 		}
+
+		u.SetPassword(DefaultPassword)
 
 		// Break when username not found
 		if db.Model(&u).Where("username = ?", name).First(&u).Error != nil {
