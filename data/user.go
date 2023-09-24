@@ -60,6 +60,34 @@ type User struct {
 	Telephone    string    `json:"telephone"`
 }
 
+// NewUser generates a new dummy user, returning a user object with a valid
+// username and ID such that it can be later updated.
+func NewUser(db *gorm.DB) (User, error) {
+	var u User
+	for newi := 1; newi < 10; newi++ {
+		name := fmt.Sprint("newuser", newi)
+		u = User{
+			Username:     name,
+			FirstName:    "New",
+			LastName:     "User",
+			Title:        "Mr",
+			PasswordHint: "Default Password",
+			Role:         UserTeacher,
+		}
+
+		// Break when username not found
+		if db.Model(&u).Where("username = ?", name).First(&u).Error != nil {
+			break
+		}
+	}
+
+	if err := db.Create(&u).Error; err != nil {
+		return u, fmt.Errorf("create temp user %s: sql error: %w", u.Username, err)
+	}
+
+	return u, nil
+}
+
 // GetUser selects the first user from the given database with the given user
 // ID. Errors returned will either be due to a non-existent user, an SQL
 // error or an invalid ID (== 0).

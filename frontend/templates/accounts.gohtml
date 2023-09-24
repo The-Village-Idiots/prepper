@@ -27,8 +27,8 @@
 					</thead>
 
 					<tbody>
-						<tr>
-							{{range .Users}}
+						{{range .Users}}
+							<tr>
 								<td>{{.ID}}</td>
 								<td>{{.Title}} {{.FirstName}} {{.LastName}}</td>
 								<td>{{.Username}}</td>
@@ -36,8 +36,9 @@
 								<td>
 									<a href="/account/{{.ID}}">Edit</a>
 								</td>
-							{{end}}
-						</tr>
+
+							</tr>
+						{{end}}
 					</tbody>
 				</table>
 

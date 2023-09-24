@@ -57,16 +57,15 @@ func handleLoginAttempt(c *gin.Context) {
 		return
 	}
 
-	if s.SignedIn {
-		c.Redirect(http.StatusFound, "/dashboard/")
-		return
-	}
-
 	frm := struct {
 		Username string `form:"username" binding:"required"`
 		Password string `form:"password" binding:"required"`
 	}{}
-	c.Bind(&frm)
+	err := c.Bind(&frm)
+	if err != nil {
+		c.String(http.StatusBadRequest, "Bad Inputs")
+		return
+	}
 
 	us, err := data.GetUserByName(Database, frm.Username)
 	if err != nil {

@@ -82,5 +82,29 @@ func handleEditAccount(c *gin.Context) {
 	c.HTML(http.StatusOK, "accounts-edit.gohtml", dat)
 }
 
+func handleNewAccount(c *gin.Context) {
+	s := Sessions.Start(c)
+	defer s.Update()
+
+	us, err := data.GetUser(Database, s.UserID)
+	if err != nil {
+		internalError(c, err)
+		return
+	}
+
+	if !us.Can(data.CapManageUsers) {
+		c.String(http.StatusForbidden, "Access Denied")
+		return
+	}
+
+	u, err := data.NewUser(Database)
+	if err != nil {
+		internalError(c, err)
+		return
+	}
+
+	c.Redirect(http.StatusFound, "/account/"+strconv.FormatUint(uint64(u.ID), 10))
+}
+
 func handleAccountTimetable(c *gin.Context) {
 }
