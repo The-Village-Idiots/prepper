@@ -1,6 +1,11 @@
 package data
 
-import "gorm.io/gorm"
+import (
+	"errors"
+	"fmt"
+
+	"gorm.io/gorm"
+)
 
 // User role definitions. Users with higher values for roles have more privileges.
 const (
@@ -13,6 +18,13 @@ const (
 	UserTechnician
 	// An admin has every privilege the site has to offer.
 	UserAdmin
+)
+
+// User lookup errors.
+var (
+	ErrInvalidID    = errors.New("invalid user ID")
+	ErrInvalidName  = errors.New("invalid username")
+	ErrUserNotFound = errors.New("user not found")
 )
 
 // A UserRole is the enumerator type for each possible user role.
@@ -46,6 +58,46 @@ type User struct {
 	Role         UserRole
 	Email        string
 	Telephone    string
+}
+
+// GetUser selects the first user from the given database with the given user
+// ID. Errors returned will either be due to a non-existent user, an SQL
+// error or an invalid ID (== 0).
+func GetUser(db *gorm.DB, id uint) (User, error) {
+	if id == 0 {
+		return User{}, fmt.Errorf("get user %d: %w", id, ErrInvalidID)
+	}
+
+	u := User{Model: &gorm.Model{ID: id}}
+	if err := db.Where(&u).First(&u).Error; err != nil {
+		if errors.Is(err, gorm.ErrRecordNotFound) {
+			return User{}, fmt.Errorf("get user %d: %w", id, ErrUserNotFound)
+		}
+
+		return User{}, fmt.Errorf("get user %d: sql error: %w", id, err)
+	}
+
+	return u, nil
+}
+
+// GetUserByName selects the first user from the given database with the given
+// user name. Errors returned will either be due to a non-existent user, an SQL
+// error or an invalid name (=="").
+func GetUserByName(db *gorm.DB, name string) (User, error) {
+	if name == "" {
+		return User{}, fmt.Errorf("get user %s: %w", name, ErrInvalidName)
+	}
+
+	u := User{Username: name}
+	if err := db.Where(&u).First(&u).Error; err != nil {
+		if errors.Is(err, gorm.ErrRecordNotFound) {
+			return User{}, fmt.Errorf("get user %s: %w", name, ErrUserNotFound)
+		}
+
+		return User{}, fmt.Errorf("get user %s: sql error: %w", name, err)
+	}
+
+	return u, nil
 }
 
 // Calls u.Password.Set with the current user as an argument.

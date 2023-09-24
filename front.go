@@ -1,6 +1,7 @@
 package main
 
 import (
+	"errors"
 	"log"
 	"net/http"
 
@@ -67,9 +68,14 @@ func handleLoginAttempt(c *gin.Context) {
 	}{}
 	c.Bind(&frm)
 
-	us := data.User{Username: frm.Username}
-	err := Database.Where(&us).First(&us).Error
+	us, err := data.GetUserByName(Database, frm.Username)
 	if err != nil {
+		// SQL error
+		if !errors.Is(err, data.ErrUserNotFound) {
+			internalError(c, err)
+			return
+		}
+
 		log.Print("Login attempt failed for username \"", frm.Username, "\" (bad username)")
 		c.Redirect(http.StatusFound, "/login?error")
 		return
