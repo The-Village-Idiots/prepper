@@ -113,6 +113,12 @@ func (u *User) Exists(db *gorm.DB) bool {
 	return db.Where(u).First(&cpy).Error == nil
 }
 
+// Can returns true if the given user is capable of performing the given action
+// act.
+func (u User) Can(act uint8) bool {
+	return u.Role >= UserRole(act)
+}
+
 // DisplayName returns the name which we should prefer to display on the user's
 // end. This is not machine-friendly.
 func (u User) DisplayName() string {
