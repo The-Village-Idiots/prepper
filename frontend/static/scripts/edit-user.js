@@ -31,10 +31,17 @@ function onfail()
 
 function saveUser(e)
 {
+	e.preventDefault();
+
+	var val = $("form")[0].checkValidity();
+	$("form").addClass("was-validated");
+	if (!val)
+		return;
+
 	$("#savingSpinner").removeClass("d-none");
 
 	json_form("form", "POST", "/api/user/edit/" + userid, onsuccess, onfail);
 
 	$("#savingSpinner").addClass("d-none");
-	e.preventDefault();
+	$("form").removeClass("was-validated");
 }
