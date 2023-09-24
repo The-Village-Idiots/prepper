@@ -72,6 +72,7 @@ func NewUser(db *gorm.DB, role UserRole) (User, error) {
 		name := fmt.Sprint("newuser", newi)
 		u = User{
 			Username:     name,
+			Password:     &Password{},
 			PasswordHint: "Default Password",
 			Role:         role,
 		}
