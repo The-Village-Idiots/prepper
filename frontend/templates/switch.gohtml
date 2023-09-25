@@ -19,6 +19,13 @@
 				</p>
 
 				<form>
+					{{if .Error}}
+						<div class="alert alert-danger">
+							<strong>User Switch Failed</strong> You were unable to switch to the given user.
+							You are still signed in to your administrator account.
+						</div>
+					{{end}}
+
 					<div class="row">
 						<label for="user" class="form-label">User to Switch To:</label>
 						<select class="form-select" name="user" id="user">
