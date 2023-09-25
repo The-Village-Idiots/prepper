@@ -62,7 +62,7 @@ type User struct {
 	Telephone    string    `json:"telephone"`
 
 	ScheduleID *uint
-	Schedule   *Schedule `json:"-"`
+	Schedule   *Schedule `json:"-" gorm:"constraint:OnUpdate:CASCADE,OnDelete:SET NULL;"`
 }
 
 // NewUser generates a new dummy user of the specified role, returning a user
