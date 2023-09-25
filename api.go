@@ -36,10 +36,10 @@ func handleAPIEditUser(c *gin.Context) {
 	}
 
 	us, err := data.GetUser(Database, s.UserID)
-	if err != nil || !us.Can(data.CapManageUsers) {
+	if err != nil {
 		c.JSON(http.StatusForbidden, gin.H{
 			"error":   "Access Denied",
-			"message": "Insufficient Privilege Level",
+			"message": "Authentication Failure",
 		})
 		return
 	}
@@ -50,6 +50,14 @@ func handleAPIEditUser(c *gin.Context) {
 		c.JSON(http.StatusBadRequest, gin.H{
 			"error":   "Bad Request",
 			"message": "Malformed User ID",
+		})
+		return
+	}
+
+	if uint(uid) != s.UserID && !us.Can(data.CapManageUsers) {
+		c.JSON(http.StatusBadRequest, gin.H{
+			"error":   "Access Denied",
+			"message": "Insufficient Privilege Level",
 		})
 		return
 	}
