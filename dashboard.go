@@ -33,7 +33,9 @@ func NewDashboardData(s session.Session) (DashboardData, error) {
 	// Greeting is based on time of day
 	g := "Good morning"
 	t := time.Now().Local().Hour()
-	if t >= 12 {
+	if t >= 17 {
+		g = "Good evening"
+	} else if t >= 12 {
 		g = "Good afternoon"
 	}
 
