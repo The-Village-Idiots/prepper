@@ -148,7 +148,10 @@ func main() {
 	if Config.DebugMode {
 		// Migrate schema if needed
 		log.Println("[WARNING]: Auto migrating database schema...")
-		if Database.AutoMigrate(&data.User{}) != nil {
+		if Database.AutoMigrate(
+			&data.User{},
+			&data.Schedule{}, &data.Timetable{}, &data.TimetableDay{}, &data.Period{},
+		) != nil {
 			log.Fatalln("Database migration failed")
 		}
 		log.Println("Auto migration complete")

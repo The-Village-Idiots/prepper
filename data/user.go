@@ -60,6 +60,9 @@ type User struct {
 	Role         UserRole  `json:"role"`
 	Email        string    `json:"email"`
 	Telephone    string    `json:"telephone"`
+
+	ScheduleID *uint
+	Schedule   *Schedule `json:"-"`
 }
 
 // NewUser generates a new dummy user of the specified role, returning a user
@@ -190,4 +193,9 @@ func (u User) DisplayName() string {
 
 	// Finally resort to username
 	return u.Username
+}
+
+// HasSchedule returns true if the schedule is not NULL in the database.
+func (u User) HasSchedule() bool {
+	return u.ScheduleID != nil
 }
