@@ -87,7 +87,7 @@ func handleAPIEditUser(c *gin.Context) {
 		return
 	}
 
-	if u.PostPassword != "" {
+	if u.PostPassword != "" && us.Can(data.CapResetPassword) {
 		if err = u.SetPassword(u.PostPassword); err != nil {
 			c.JSON(http.StatusBadRequest, gin.H{
 				"error":   "Bad Password",

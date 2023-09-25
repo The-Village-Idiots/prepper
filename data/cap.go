@@ -10,6 +10,8 @@ const (
 
 	// Add, delete or modify users.
 	CapManageUsers = UserAdmin
+	// Change passwords without authentication.
+	CapResetPassword = UserAdmin
 	// Become another user without login credentials.
 	CapImpersonate = UserAdmin
 
