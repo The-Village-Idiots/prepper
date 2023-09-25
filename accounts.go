@@ -20,6 +20,11 @@ func handleAccounts(c *gin.Context) {
 		return
 	}
 
+	if !ddat.User.Can(data.CapManageUsers) {
+		c.String(http.StatusForbidden, "Access Denied")
+		return
+	}
+
 	us, err := data.GetUsers(Database)
 	if err != nil {
 		internalError(c, err)
