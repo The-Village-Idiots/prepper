@@ -178,5 +178,72 @@ func handleAccountSwitch(c *gin.Context) {
 	c.HTML(http.StatusOK, "switch.gohtml", dat)
 }
 
+// handleChangePassword is the handler for "/account/password".
+//
+// This only allows changes for the current user and such is not an
+// authenticated route.
+func handleChangePassword(c *gin.Context) {
+	s := Sessions.Start(c)
+	defer s.Update()
+
+	ddat, err := NewDashboardData(s)
+	if err != nil {
+		internalError(c, err)
+		return
+	}
+
+	_, erro := c.GetQuery("error")
+	_, success := c.GetQuery("success")
+	dat := struct {
+		DashboardData
+		Error   bool
+		Success bool
+	}{ddat, erro, success}
+
+	c.HTML(http.StatusOK, "password.gohtml", dat)
+}
+
+// handleChangePasswordAttempt is the handler for POST @ "/account/password".
+//
+// This route actually changes the password given by the user.
+func handleChangePasswordAttempt(c *gin.Context) {
+	s := Sessions.Start(c)
+	defer s.Update()
+
+	ddat, err := NewDashboardData(s)
+	if err != nil {
+		internalError(c, err)
+		return
+	}
+
+	oldPass, ok := c.GetPostForm("old_password")
+	if !ok {
+		c.Redirect(http.StatusFound, "/account/password?error")
+		return
+	}
+	newpass, ok := c.GetPostForm("new_password")
+	if !ok {
+		c.Redirect(http.StatusFound, "/account/password?error")
+		return
+	}
+
+	if !ddat.User.Password.Matches(oldPass) {
+		c.Redirect(http.StatusFound, "/account/password?error")
+		return
+	}
+
+	if ddat.User.SetPassword(newpass) != nil {
+		c.Redirect(http.StatusFound, "/account/password?error")
+		return
+	}
+
+	if Database.Updates(&ddat.User).Error != nil {
+		internalError(c, err)
+		return
+	}
+
+	c.Redirect(http.StatusFound, "/account/password?success")
+}
+
 func handleAccountTimetable(c *gin.Context) {
 }
