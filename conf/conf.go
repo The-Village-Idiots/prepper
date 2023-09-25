@@ -22,7 +22,8 @@ type Config struct {
 
 	DebugMode bool `json:"debug"`
 
-	Database Database `json:"database"`
+	Database Database     `json:"database"`
+	ISAMS    *ISAMSConfig `json:"isams"`
 }
 
 // NewConfig parses a JSON config file from the file at path.
@@ -54,6 +55,12 @@ func (c Config) FullAddr() string {
 	return fmt.Sprintf("%s:%d", c.ListenAddr, c.ListenPort)
 }
 
+// HasISAMS returns true if ISAMS is configured in the config file, enabling
+// ISAMS features.
+func (c Config) HasISAMS() bool {
+	return c.ISAMS != nil
+}
+
 // Database is a sub object contained within config which contains database
 // credentials and other important configuration values.
 type Database struct {
@@ -68,4 +75,9 @@ type Database struct {
 // accept.
 func (d Database) FullAddr() string {
 	return fmt.Sprint(d.Hostname, ":", d.Port)
+}
+
+type ISAMSConfig struct {
+	Domain string `validate:"hostname" json:"domain"`
+	APIKey string `json:"api_key"`
 }

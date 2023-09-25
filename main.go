@@ -138,6 +138,11 @@ func main() {
 		log.Fatalln(err)
 	}
 
+	// ISAMS Support
+	if Config.HasISAMS() {
+		log.Println("ISAMS Support Enabled")
+	}
+
 	// Init session storage
 	Sessions = session.NewStore()
 
