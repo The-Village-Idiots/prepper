@@ -52,6 +52,10 @@ func (i *ISAMS) request() (*isamsResponse, error) {
 		return nil, fmt.Errorf("isams at %s: %w: %s", i.endpoint.String(), ErrRequest, err.Error())
 	}
 
+	if resp.StatusCode != http.StatusOK {
+		return nil, fmt.Errorf("isams at %s: %w: response code %d", i.endpoint.String(), ErrRequest, resp.StatusCode)
+	}
+
 	body, err := io.ReadAll(resp.Body)
 	if err != nil {
 		return nil, fmt.Errorf("isams at %s: %w: %s", i.endpoint.String(), ErrRequestIO, err.Error())
