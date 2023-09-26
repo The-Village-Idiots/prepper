@@ -144,8 +144,6 @@ func main() {
 
 	// ISAMS Support
 	if Config.HasISAMS() {
-		log.Println(time.Now().Format(time.RFC3339))
-
 		log.Println("Loading iSAMS data...")
 		var err error
 		ISAMS, err = isams.New(Config.ISAMS.Domain, Config.ISAMS.APIKey)
