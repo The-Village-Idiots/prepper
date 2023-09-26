@@ -63,6 +63,9 @@ type User struct {
 
 	ScheduleID *uint
 	Schedule   *Schedule `json:"-" gorm:"constraint:OnUpdate:CASCADE,OnDelete:SET NULL;"`
+
+	// IsamsID is the isams UserCode for this user.
+	IsamsID *string `json:"isams_id"`
 }
 
 // NewUser generates a new dummy user of the specified role, returning a user

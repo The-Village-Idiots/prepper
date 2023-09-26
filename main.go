@@ -19,6 +19,7 @@ import (
 
 	"github.com/ejv2/prepper/conf"
 	"github.com/ejv2/prepper/data"
+	"github.com/ejv2/prepper/isams"
 	"github.com/ejv2/prepper/session"
 
 	"github.com/gin-gonic/gin"
@@ -41,6 +42,7 @@ var (
 	Config   conf.Config
 	Database *gorm.DB
 	Sessions session.Store
+	ISAMS    *isams.ISAMS
 )
 
 func loadConfig() error {
@@ -142,7 +144,16 @@ func main() {
 
 	// ISAMS Support
 	if Config.HasISAMS() {
-		log.Println("ISAMS Support Enabled")
+		log.Println(time.Now().Format(time.RFC3339))
+
+		log.Println("Loading iSAMS data...")
+		var err error
+		ISAMS, err = isams.New(Config.ISAMS.Domain, Config.ISAMS.APIKey)
+		if err != nil {
+			log.Fatalln("iSAMS load:", err)
+		}
+
+		log.Print("ISAMS Support Enabled (connected to ", Config.ISAMS.Domain, ")")
 	}
 
 	// Init session storage
