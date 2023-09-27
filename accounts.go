@@ -278,13 +278,19 @@ func handleAccountTimetable(c *gin.Context) {
 		return
 	}
 
+	usr, err := data.GetUser(Database, uint(uid))
+	if err != nil {
+		c.String(http.StatusNotFound, "User not Found")
+		return
+	}
+
 	var iusr *isams.User
 	var iusrs []isams.User
 	if Config.HasISAMS() {
-		if ddat.User.IsamsID != nil {
+		if usr.IsamsID != nil {
 			// NOTE: deliberately ignoring error here to use nil as a
 			// sentinel. very naughty!
-			iusr, _ = ISAMS.FindUser(*ddat.User.IsamsID)
+			iusr, _ = ISAMS.FindUser(*usr.IsamsID)
 		}
 
 		iusrs = ISAMS.Users
@@ -292,10 +298,120 @@ func handleAccountTimetable(c *gin.Context) {
 
 	dat := struct {
 		DashboardData
+		TargetUser   data.User
 		ISAMSEnabled bool
 		ISAMSUser    *isams.User
 		ISAMSUsers   []isams.User
-	}{ddat, Config.HasISAMS(), iusr, iusrs}
+	}{ddat, usr, Config.HasISAMS(), iusr, iusrs}
 
 	c.HTML(http.StatusOK, "link.gohtml", dat)
+}
+
+// handleAccountUnlink is the handler for "/account/[ID]/unlink".
+//
+// Simply removes the iSAMS ID field from a user's database record. This is
+// harder using GORM than I thought...
+func handleAccountUnlink(c *gin.Context) {
+	s := Sessions.Start(c)
+	defer s.Update()
+
+	ddat, err := NewDashboardData(s)
+	if err != nil {
+		internalError(c, err)
+		return
+	}
+
+	suid := c.Param("id")
+	if suid == "" {
+		c.String(http.StatusBadRequest, "Invalid user ID")
+		return
+	}
+	uid, err := strconv.ParseUint(suid, 10, 32)
+	if err != nil {
+		c.String(http.StatusBadRequest, "Invalid user ID")
+		return
+	}
+
+	// Need to be technician to link another's timetable
+	if uint(uid) != s.UserID && !ddat.User.Can(data.CapManageTimetable) {
+		c.String(http.StatusForbidden, "Permission Denied")
+		return
+	}
+
+	usr, err := data.GetUser(Database, uint(uid))
+	if err != nil {
+		c.String(http.StatusNotFound, "User not Found")
+		return
+	}
+
+	usr.IsamsID = nil
+	if err := Database.Model(&usr).Where(&usr).Update("isams_id", nil).Error; err != nil {
+		internalError(c, err)
+		return
+	}
+
+	c.Redirect(http.StatusFound, "/account/"+suid+"/timetable")
+}
+
+// handleAccountLink is the handler for "/account/[ID]/link".
+//
+// One GET parameter is expected containing the iSAMS UserCode which can be
+// added to the user's account.
+func handleAccountLink(c *gin.Context) {
+	s := Sessions.Start(c)
+	defer s.Update()
+
+	ddat, err := NewDashboardData(s)
+	if err != nil {
+		internalError(c, err)
+		return
+	}
+
+	suid := c.Param("id")
+	if suid == "" {
+		c.String(http.StatusBadRequest, "Invalid user ID")
+		return
+	}
+	uid, err := strconv.ParseUint(suid, 10, 32)
+	if err != nil {
+		c.String(http.StatusBadRequest, "Invalid user ID")
+		return
+	}
+
+	// Need to be technician to link another's timetable
+	if uint(uid) != s.UserID && !ddat.User.Can(data.CapManageTimetable) {
+		c.String(http.StatusForbidden, "Permission Denied")
+		return
+	}
+
+	usr, err := data.GetUser(Database, uint(uid))
+	if err != nil {
+		c.String(http.StatusNotFound, "User not Found")
+		return
+	}
+
+	if usr.IsamsID != nil {
+		c.String(http.StatusForbidden, "User already has iSAMS ID. Must unlink existing first!")
+		return
+	}
+
+	id, ok := c.GetQuery("id")
+	if !ok {
+		c.String(http.StatusBadRequest, "Expected ID parameter")
+		return
+	}
+
+	iusr, err := ISAMS.FindUser(id)
+	if err != nil {
+		c.String(http.StatusNotFound, "No such iSAMS user")
+		return
+	}
+
+	usr.IsamsID = &iusr.UserCode
+	if err = Database.Updates(&usr).Error; err != nil {
+		internalError(c, err)
+		return
+	}
+
+	c.Redirect(http.StatusFound, "/account/"+suid+"/timetable")
 }

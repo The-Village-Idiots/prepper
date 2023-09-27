@@ -25,12 +25,18 @@
 
 			{{if .ISAMSUser}}
 				<p>
-					The account <em>{{.User.DisplayName}}</em> is linked to iSAMS account <strong><ul>{{.ISAMSUser.Salutation}}</ul></strong> (ISAMS ID: {{.ISAMSUser.UserCode}}).
-					<a href="/account/{{.User.ID}}/timetable/unlink">Unlink</a>
+					<em>{{.TargetUser.DisplayName}}</em>'s account is linked to iSAMS account <strong>{{.ISAMSUser.Salutation}}</strong>.
+					<a href="/account/{{.TargetUser.ID}}/unlink">Unlink</a>
 				</p>
+				<p>
+					This is being used to display and process your timetable to suggest times, locations and sets.
+					If this is not correct, unlink the account and select a new one from the listing.
+				</p>
+				<code>(ISAMS ID: {{.ISAMSUser.UserCode}})</code>
+				<hr>
 			{{else}}
 				<p>
-					The account <em>{{.User.DisplayName}}</em> is not currently linked to an iSAMS account.
+					The account <em>{{.TargetUser.DisplayName}}</em> is not currently linked to an iSAMS account.
 				</p>
 				<br>
 				<p>
