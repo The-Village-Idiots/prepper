@@ -61,9 +61,6 @@ type User struct {
 	Email        string    `json:"email"`
 	Telephone    string    `json:"telephone"`
 
-	ScheduleID *uint
-	Schedule   *Schedule `json:"-" gorm:"constraint:OnUpdate:CASCADE,OnDelete:SET NULL;"`
-
 	// IsamsID is the isams UserCode for this user.
 	IsamsID *string `json:"isams_id"`
 }
@@ -196,9 +193,4 @@ func (u User) DisplayName() string {
 
 	// Finally resort to username
 	return u.Username
-}
-
-// HasSchedule returns true if the schedule is not NULL in the database.
-func (u User) HasSchedule() bool {
-	return u.ScheduleID != nil
 }
