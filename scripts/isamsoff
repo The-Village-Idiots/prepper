@@ -1,0 +1,3 @@
+#!/bin/sh
+
+mv config.json isams.config.json
