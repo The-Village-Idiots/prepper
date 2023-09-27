@@ -1,0 +1,71 @@
+<!DOCTYPE html>
+
+<html>
+	<head>
+		{{template "head.gohtml" "Change Password"}}
+
+		<script src="/assets/scripts/link.js"></script>
+	</head>
+
+	<body>
+		{{template "dashnav.gohtml" .}}
+
+		<div class="container container-fluid mt-3">
+			<h1>Link to iSAMS</h1>
+			<hr>
+
+			{{if not .ISAMSEnabled}}
+
+			<div class="alert alert-warning">
+				<strong class="alert-title">iSAMS Support is not Enabled</strong>
+				Please ask your system administrator to set up iSAMS support on your server.
+			</div>
+
+			{{else}}
+
+			{{if .ISAMSUser}}
+				<p>
+					The account <em>{{.User.DisplayName}}</em> is linked to iSAMS account <strong><ul>{{.ISAMSUser.Salutation}}</ul></strong> (ISAMS ID: {{.ISAMSUser.UserCode}}).
+					<a href="/account/{{.User.ID}}/timetable/unlink">Unlink</a>
+				</p>
+			{{else}}
+				<p>
+					The account <em>{{.User.DisplayName}}</em> is not currently linked to an iSAMS account.
+				</p>
+				<br>
+				<p>
+					Find your account below to link to your iSAMS account and enable timetable support and more!
+				</p>
+				<hr>
+
+				<label class="form-label">Find your iSAMS account:</label>
+				<input id="usernameInput" class="form-control" placeholder="Begin typing your iSAMS username or full name..." onkeyup="update_linking(event)">
+
+				<table class="table table-striped mt-2" id="accountsTable">
+					<thead>
+						<tr>
+							<th scope="col"></th> <!-- UserCode -->
+							<th scope="col"></th> <!-- UserName -->
+							<th scope="col"></th> <!-- Salutation -->
+							<th scope="col"></th> <!-- Action -->
+						</tr>
+					</thead>
+
+					<tbody>
+						{{range .ISAMSUsers}}
+							<tr>
+								<td>{{.UserCode}}</td>
+								<td>{{.UserName}}</td>
+								<td>{{.Salutation}}</td>
+								<td><a href="link?id={{.UserCode}}">Link Account</a></td>
+							</tr>
+						{{end}}
+					</tbody>
+				</table>
+			{{end}}
+
+			{{- /* if not .ISAMSEnabled */ -}}
+			{{end}}
+		</div>
+	</body>
+</html>

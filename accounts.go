@@ -6,6 +6,7 @@ import (
 	"strconv"
 
 	"github.com/ejv2/prepper/data"
+	"github.com/ejv2/prepper/isams"
 	"github.com/gin-gonic/gin"
 )
 
@@ -245,5 +246,56 @@ func handleChangePasswordAttempt(c *gin.Context) {
 	c.Redirect(http.StatusFound, "/account/password?success")
 }
 
+// handleAccountTimetable is the handler for "/account/[ID]/timetable"
+//
+// This allows changes to a user's timetable. Changes to the current user's
+// timetable are allowed unauthenticated, but to change others the user must be
+// at least a technician.
 func handleAccountTimetable(c *gin.Context) {
+	s := Sessions.Start(c)
+	defer s.Update()
+
+	ddat, err := NewDashboardData(s)
+	if err != nil {
+		internalError(c, err)
+		return
+	}
+
+	suid := c.Param("id")
+	if suid == "" {
+		c.String(http.StatusBadRequest, "Invalid user ID")
+		return
+	}
+	uid, err := strconv.ParseUint(suid, 10, 32)
+	if err != nil {
+		c.String(http.StatusBadRequest, "Invalid user ID")
+		return
+	}
+
+	// Need to be technician to manage another's timetable.
+	if uint(uid) != s.UserID && !ddat.User.Can(data.CapManageTimetable) {
+		c.String(http.StatusForbidden, "Permission Denied")
+		return
+	}
+
+	var iusr *isams.User
+	var iusrs []isams.User
+	if Config.HasISAMS() {
+		if ddat.User.IsamsID != nil {
+			// NOTE: deliberately ignoring error here to use nil as a
+			// sentinel. very naughty!
+			iusr, _ = ISAMS.FindUser(*ddat.User.IsamsID)
+		}
+
+		iusrs = ISAMS.Users
+	}
+
+	dat := struct {
+		DashboardData
+		ISAMSEnabled bool
+		ISAMSUser    *isams.User
+		ISAMSUsers   []isams.User
+	}{ddat, Config.HasISAMS(), iusr, iusrs}
+
+	c.HTML(http.StatusOK, "link.gohtml", dat)
 }

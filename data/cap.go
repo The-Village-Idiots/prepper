@@ -10,6 +10,8 @@ const (
 
 	// Add, delete or modify users.
 	CapManageUsers = UserAdmin
+	// Manage another user's timetable.
+	CapManageTimetable = UserTechnician
 	// Change passwords without authentication.
 	CapResetPassword = UserAdmin
 	// Become another user without login credentials.

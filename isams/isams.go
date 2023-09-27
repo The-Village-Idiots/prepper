@@ -20,6 +20,8 @@ var (
 	ErrRequestIO   = errors.New("request I/O failed")
 	ErrEncoding    = errors.New("bad response encoding")
 	ErrPrepopulate = errors.New("prepopulation failed")
+
+	ErrNotFound = errors.New("not found")
 )
 
 // isamsEndpoint is a configured requestable endpoint, formatted to request the
@@ -86,6 +88,20 @@ func (i *ISAMS) prepopulate() error {
 	i.Users = resp.HRManager.CurrentStaff.StaffMember
 
 	return nil
+}
+
+// FindUser looks up a user by usercode, which should be the ID used across the
+// rest of the codebase to uniquely identify a user (due to it being used
+// across the API).
+func (i *ISAMS) FindUser(ucode string) (*User, error) {
+	for _, u := range i.Users {
+		if u.UserCode == ucode {
+			return &u, nil
+		}
+
+	}
+
+	return nil, fmt.Errorf("find isams user %s: %w", ucode, ErrNotFound)
 }
 
 // New loads a new intance of the ISAMS data manager. The first action is to
