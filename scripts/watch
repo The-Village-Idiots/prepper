@@ -1,9 +1,11 @@
 #!/bin/sh
 
 trap "pkill prepper" 2 15
-while true
+
+while ! (find ./ -name "*.go" -print \
+	| entr -dcs "pkill prepper; go build .; ./prepper &")
 do
-	find ./ -name "*.go" -print \
-		| entr -dcs "pkill prepper; go build .; ./prepper &"
+	true
 done
+
 pkill prepper
