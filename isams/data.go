@@ -15,6 +15,12 @@ type isamsResponse struct {
 			StaffMember []User
 		}
 	}
+
+	EstateManager struct {
+		Buildings struct {
+			Building []Building
+		}
+	}
 }
 
 // User is the definitions for the isams user object returned from the bulk
@@ -60,5 +66,31 @@ func (u User) DataUser() data.User {
 		Telephone: u.SchoolMobileNumber,
 
 		IsamsID: &u.UserCode,
+	}
+}
+
+// A Classroom is a possible location for a lesson. Every building on iSAMS has
+// zero or more classrooms.
+type Classroom struct {
+	ID          ID `json:"~Id"`
+	Name        string
+	Description string
+	Initials    string
+	Code        string
+}
+
+// Building is an entry in the isams EstateManager.
+type Building struct {
+	ID     ID `json:"@Id"`
+	Parent ID
+
+	Name        string
+	Description string
+	Initials    string
+
+	Classroom Bool
+
+	Classrooms struct {
+		Classroom []Classroom
 	}
 }
