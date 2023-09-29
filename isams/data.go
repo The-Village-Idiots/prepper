@@ -1,6 +1,8 @@
 package isams
 
 import (
+	"encoding/json"
+	"fmt"
 	"time"
 
 	"github.com/ejv2/prepper/data"
@@ -88,6 +90,26 @@ type Classroom struct {
 	Code        string
 }
 
+type ClassroomCollection []Classroom
+
+// UnmarshalJSON overrides the unmarshaling routine for this struct, as iSAMS
+// likes to pick and choose whether this is a struct or an array.
+func (c *ClassroomCollection) UnmarshalJSON(data []byte) error {
+	arr := make([]Classroom, 1)
+
+	err := json.Unmarshal(data, &arr)
+	if err != nil {
+		// Assume an object from now on
+		err = json.Unmarshal(data, &arr[0])
+		if err != nil {
+			return fmt.Errorf("unmarshal isams classroom collection: %w", err)
+		}
+	}
+
+	*c = ClassroomCollection(arr)
+	return nil
+}
+
 // Building is an entry in the isams EstateManager. It contains a collection of
 // classrooms.
 type Building struct {
@@ -98,10 +120,8 @@ type Building struct {
 	Description string
 	Initials    string
 
-	Classroom Bool
-
 	Classrooms struct {
-		Classroom []Classroom
+		Classroom ClassroomCollection
 	}
 }
 
@@ -162,8 +182,7 @@ type TimetableDay struct {
 	}
 }
 
-// A Period is a block of time identified by an ID attached to a start and end
-// time.
+// A Period is a block of time identified by an ID attached to a start and end time.
 type Period struct {
 	ID        ID `json:"@Id"`
 	Name      string
