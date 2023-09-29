@@ -21,6 +21,15 @@ type isamsResponse struct {
 			Building []Building
 		}
 	}
+
+	TimetableManager struct {
+		PublishedTimetables struct {
+			Timetable Timetable
+		}
+		Structure struct {
+			Week []TimetableWeek
+		}
+	}
 }
 
 // User is the definitions for the isams user object returned from the bulk
@@ -79,7 +88,8 @@ type Classroom struct {
 	Code        string
 }
 
-// Building is an entry in the isams EstateManager.
+// Building is an entry in the isams EstateManager. It contains a collection of
+// classrooms.
 type Building struct {
 	ID     ID `json:"@Id"`
 	Parent ID
@@ -93,4 +103,70 @@ type Building struct {
 	Classrooms struct {
 		Classroom []Classroom
 	}
+}
+
+// Timetable is a set of Schedule(s) with some associated metadata.
+type Timetable struct {
+	ID        ID `json:"@Id"`
+	Name      string
+	StartYear string
+	EndYear   string
+
+	Schedules struct {
+		Schedule []Schedule
+	}
+}
+
+// Schedule is an entry in the timetable. It contains a reference to a Period
+// (which gives us timing information) along with a reference to the assigned
+// teacher and room. The SetID and Set are always set to either 1 or zero, for
+// some reason.
+type Schedule struct {
+	ID   ID `json:"@Id"`
+	Code string
+
+	// This is the UserCode of the teacher.
+	Teacher string
+	// This is the ID in the classroom table.
+	RoomID   ID `json:"RoomId"`
+	PeriodID ID `json:"PeriodId"`
+}
+
+// A TimetableWeek contains a collection of timetabled days (of which there
+// must be at least 5), along with some metadata. We discard divisions
+// information here as it isn't particularly important to us.
+type TimetableWeek struct {
+	ID        ID `json:"@Id"`
+	Name      string
+	ShortName string
+	Ordinal   ID
+	Active    Bool
+
+	Days struct {
+		Day []TimetableDay
+	}
+}
+
+// A TimetableDay is a component of a TimetableWeek which contains one or more
+// periods.
+type TimetableDay struct {
+	ID        ID `json:"@Id"`
+	Name      string
+	ShortName string
+	Day       ID
+	Ordinal   ID
+	Active    Bool
+
+	Periods struct {
+		Period []Period
+	}
+}
+
+// A Period is a block of time identified by an ID attached to a start and end
+// time.
+type Period struct {
+	ID        ID `json:"@Id"`
+	Name      string
+	StartTime Time
+	EndTime   Time
 }
