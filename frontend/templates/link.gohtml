@@ -30,6 +30,12 @@
 				</p>
 				<code>(ISAMS ID: {{.ISAMSUser.UserCode}})</code>
 				<hr>
+
+				<h2>Your Periods</h2>
+
+				{{range .ISAMSSchedule}}
+					<p>{{.}}</p>
+				{{end}}
 			{{else}}
 				<p>
 					The account <em>{{.TargetUser.DisplayName}}</em> is not currently linked to an iSAMS account.

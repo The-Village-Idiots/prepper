@@ -127,10 +127,12 @@ type Building struct {
 
 // Timetable is a set of Schedule(s) with some associated metadata.
 type Timetable struct {
-	ID        ID `json:"@Id"`
-	Name      string
-	StartYear string
-	EndYear   string
+	ID   ID `json:"@Id"`
+	Name string
+
+	// Marked as IDs to automatically parse to integers.
+	StartYear ID
+	EndYear   ID
 
 	Schedules struct {
 		Schedule []Schedule
