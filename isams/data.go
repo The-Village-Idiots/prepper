@@ -156,7 +156,7 @@ func (u *User) Timetable(i *ISAMS) *UserTimetable {
 // A Classroom is a possible location for a lesson. Every building on iSAMS has
 // zero or more classrooms.
 type Classroom struct {
-	ID          ID `json:"~Id"`
+	ID          ID `json:"@Id"`
 	Name        string
 	Description string
 	Initials    string
