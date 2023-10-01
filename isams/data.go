@@ -98,33 +98,36 @@ func (u *User) compileTimetable(i *ISAMS) {
 	// Init storage.
 	arr := make(UserTimetable, len(i.weeks))
 	for i := range arr {
-		arr[i] = make([]StructuredDay, 0, 5)
+		arr[i] = StructuredWeek{"", make([]StructuredDay, 0, 5)}
 	}
 
 	// Build initial tree.
 	for _, s := range sc {
 		for wi, w := range i.weeks {
+			arr[wi].Name = w.Name
+
 			for di, d := range w.Days.Day {
 				// If day is out of range...
-				if di >= len(arr[wi]) {
+				if di >= len(arr[wi].Days) {
 					// Construct new empty day with capacity for all periods
-					arr[wi] = append(arr[wi], make(StructuredDay, 0, len(d.Periods.Period)))
+					arr[wi].Days = append(arr[wi].Days, StructuredDay{
+						d.Name,
+						make([]StructuredTimetable, 0, len(d.Periods.Period)),
+					})
 				}
 
 				for _, p := range d.Periods.Period {
 					if p.ID == s.PeriodID {
 						r, _ := i.FindRoom(uint64(s.RoomID))
 
-						arr[wi][di] = append(arr[wi][di], StructuredTimetable{
-							WeekName: &i.weeks[wi].Name,
-							DayName:  &i.weeks[wi].Days.Day[di].Name,
+						arr[wi].Days[di].Periods = append(arr[wi].Days[di].Periods,
+							StructuredTimetable{
+								StartTime: time.Time(p.StartTime),
+								EndTime:   time.Time(p.EndTime),
 
-							StartTime: time.Time(p.StartTime),
-							EndTime:   time.Time(p.EndTime),
-
-							Room:       r,
-							PeriodCode: s.Code,
-						})
+								Room:       r,
+								PeriodCode: s.Code,
+							})
 					}
 				}
 			}
@@ -133,7 +136,7 @@ func (u *User) compileTimetable(i *ISAMS) {
 
 	// Sort leaves in ascending time order.
 	for _, w := range arr {
-		for _, d := range w {
+		for _, d := range w.Days {
 			sort.Sort(d)
 		}
 	}
