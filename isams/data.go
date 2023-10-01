@@ -3,6 +3,8 @@ package isams
 import (
 	"encoding/json"
 	"fmt"
+	"sort"
+	"sync"
 	"time"
 
 	"github.com/ejv2/prepper/data"
@@ -59,6 +61,9 @@ type User struct {
 
 	// Used to filter out old records.
 	LeavingDate *Date
+
+	timetableSetup *sync.Once
+	timetable      *UserTimetable
 }
 
 // StillHere checks if the leaving date of a record is either nil or after now.
@@ -78,6 +83,70 @@ func (u User) DataUser() data.User {
 
 		IsamsID: &u.UserCode,
 	}
+}
+
+// compileTimetable compiles a structured timetable for this user.
+func (u *User) compileTimetable(i *ISAMS) {
+	sc, err := i.UserSchedule(*u)
+	if err != nil {
+		return
+	}
+
+	// Init storage.
+	arr := make(UserTimetable, len(i.weeks))
+	for i := range arr {
+		arr[i] = make([]StructuredDay, 0, 5)
+	}
+
+	// Build initial tree.
+	for _, s := range sc {
+		for wi, w := range i.weeks {
+			for di, d := range w.Days.Day {
+				// If day is out of range...
+				if di >= len(arr[wi]) {
+					// Construct new empty day with capacity for all periods
+					arr[wi] = append(arr[wi], make(StructuredDay, 0, len(d.Periods.Period)))
+				}
+
+				for _, p := range d.Periods.Period {
+					if p.ID == s.PeriodID {
+						r, _ := i.FindRoom(uint64(s.RoomID))
+
+						arr[wi][di] = append(arr[wi][di], StructuredTimetable{
+							WeekName: &i.weeks[wi].Name,
+							DayName:  &i.weeks[wi].Days.Day[di].Name,
+
+							StartTime: time.Time(p.StartTime),
+							EndTime:   time.Time(p.EndTime),
+
+							Room:       r,
+							PeriodCode: s.Code,
+						})
+					}
+				}
+			}
+		}
+	}
+
+	// Sort leaves in ascending time order.
+	for _, w := range arr {
+		for _, d := range w {
+			sort.Sort(d)
+		}
+	}
+
+	u.timetable = &arr
+}
+
+// Timetable returns this user's structured user timetable. In the common
+// case, this returns immediately with cached data. Occasionally, this routine
+// needs to build the structured timetable, which can take some time. If nil is
+// returned, the timetable should be treated as empty as compilation failed.
+func (u *User) Timetable(i *ISAMS) *UserTimetable {
+	// We can now guarantee that u.timetable is compiled.
+	u.timetableSetup.Do(func() { u.compileTimetable(i) })
+
+	return u.timetable
 }
 
 // A Classroom is a possible location for a lesson. Every building on iSAMS has

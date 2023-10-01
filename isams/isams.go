@@ -6,6 +6,7 @@ import (
 	"fmt"
 	"io"
 	"net/http"
+	"sync"
 	"time"
 )
 
@@ -102,6 +103,11 @@ func (i *ISAMS) prepopulate() error {
 		i.Rooms = append(i.Rooms, b.Classrooms.Classroom...)
 	}
 
+	// Init user caches
+	for j := range i.Users {
+		i.Users[j].timetableSetup = new(sync.Once)
+	}
+
 	return nil
 }
 
@@ -122,9 +128,9 @@ func (i *ISAMS) validateTimetable() bool {
 // rest of the codebase to uniquely identify a user (due to it being used
 // across the API).
 func (i *ISAMS) FindUser(ucode string) (*User, error) {
-	for _, u := range i.Users {
+	for j, u := range i.Users {
 		if u.UserCode == ucode {
-			return &u, nil
+			return &i.Users[j], nil
 		}
 
 	}

@@ -286,14 +286,14 @@ func handleAccountTimetable(c *gin.Context) {
 
 	var iusr *isams.User
 	var iusrs []isams.User
-	var isched []isams.Schedule
+	var isched *isams.UserTimetable
 	if Config.HasISAMS() {
 		if usr.IsamsID != nil {
 			// NOTE: deliberately ignoring error here to use nil as a
 			// sentinel. very naughty!
 			iusr, _ = ISAMS.FindUser(*usr.IsamsID)
 			if iusr != nil {
-				isched, _ = ISAMS.UserSchedule(*iusr)
+				isched = iusr.Timetable(ISAMS)
 			}
 		}
 
@@ -306,7 +306,7 @@ func handleAccountTimetable(c *gin.Context) {
 		ISAMSEnabled  bool
 		ISAMSUser     *isams.User
 		ISAMSUsers    []isams.User
-		ISAMSSchedule []isams.Schedule
+		ISAMSSchedule *isams.UserTimetable
 	}{ddat, usr, Config.HasISAMS(), iusr, iusrs, isched}
 
 	c.HTML(http.StatusOK, "link.gohtml", dat)
