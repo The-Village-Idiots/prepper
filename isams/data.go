@@ -3,6 +3,7 @@ package isams
 import (
 	"encoding/json"
 	"fmt"
+	"log"
 	"sort"
 	"sync"
 	"time"
@@ -87,6 +88,8 @@ func (u User) DataUser() data.User {
 
 // compileTimetable compiles a structured timetable for this user.
 func (u *User) compileTimetable(i *ISAMS) {
+	log.Println("[iSAMS] Compiling user timetable for", u.UserName)
+
 	sc, err := i.UserSchedule(*u)
 	if err != nil {
 		return
@@ -136,6 +139,7 @@ func (u *User) compileTimetable(i *ISAMS) {
 	}
 
 	u.timetable = &arr
+	log.Println("[iSAMS] User timetable compilation for", u.UserName, "complete")
 }
 
 // Timetable returns this user's structured user timetable. In the common
