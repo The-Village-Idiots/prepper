@@ -5,6 +5,17 @@
 		{{template "head.gohtml" "Link iSAMS Account"}}
 
 		<script src="/assets/scripts/link.js"></script>
+		<style>
+			table {
+				display: table;
+			}
+			table tr {
+				display: table-cell;
+			}
+			table tr td {
+				display: block;
+			}
+		</style>
 	</head>
 
 	<body>
@@ -33,9 +44,32 @@
 
 				<h2>Your Periods</h2>
 
-				{{if .ISAMSSchedule}}
-					{{.ISAMSSchedule}}
-				{{end}}
+				<ul class="nav nav-tabs" id="timetableTabs" role="tablist">
+					{{range $i, $elem := .ISAMSSchedule}}
+						<li class="nav-item" role="presentation">
+							<button class="nav-link {{if eq $i 0}}active{{end}}" id="tab-{{$i}}" data-bs-toggle="tab" data-bs-target="#pane-{{$i}}" type="button" role="tab">{{$elem.Name}}</button>
+						</li>
+					{{end}}
+				</ul>
+
+				<div class="tab-content" id="timetableContent">
+					{{range $i, $elem := .ISAMSSchedule}}
+						<div class="tab-pane fade {{if eq $i 0}}show active{{end}}" id="pane-{{$i}}" role="tabpanel">
+							<table class="table timetable-table">
+								<tbody>
+									{{range $elem.Days}}
+									<tr>
+										<th>{{.Name}}</th>
+										{{range .Periods}}
+												<td>{{.PeriodCode}}</td>
+										{{end}}
+									</tr>
+									{{end}}
+								</tbody>
+							</table>
+						</div>
+					{{end}}
+				</div>
 			{{else}}
 				<p>
 					The account <em>{{.TargetUser.DisplayName}}</em> is not currently linked to an iSAMS account.
