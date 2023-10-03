@@ -6,13 +6,13 @@
 
 		<script src="/assets/scripts/link.js"></script>
 		<style>
-			table {
+			table.timetable-table {
 				display: table;
 			}
-			table tr {
+			table tr.timetable-table {
 				display: table-cell;
 			}
-			table tr td {
+			table tr td.timetable-table {
 				display: block;
 			}
 		</style>
@@ -58,10 +58,10 @@
 							<table class="table timetable-table">
 								<tbody>
 									{{range $elem.Days}}
-									<tr>
-										<th>{{.Name}}</th>
+									<tr class="timetable-table">
+										<th class="timetable-table">{{.Name}}</th>
 										{{range .Periods}}
-												<td>{{.PeriodCode}}</td>
+												<td class="timetable-table">{{.PeriodCode}}</td>
 										{{end}}
 									</tr>
 									{{end}}
