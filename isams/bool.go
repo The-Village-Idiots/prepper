@@ -20,6 +20,7 @@ func (b *Bool) UnmarshalJSON(data []byte) error {
 
 	if v == "1" || v == "true" {
 		*b = true
+		return nil
 	}
 
 	*b = false
