@@ -44,7 +44,9 @@ function saveUser(e)
 
 	$("#savingSpinner").removeClass("d-none");
 
-	json_form("form", "POST", "/api/user/edit/" + userid, onsuccess, onfail);
+	setTimeout(function() {
+		json_form("form", "POST", "/api/user/edit/" + userid, onsuccess, onfail);
+	}, 100);
 
 	$("form").removeClass("was-validated");
 }
