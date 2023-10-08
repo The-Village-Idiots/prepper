@@ -19,8 +19,9 @@ type Activity struct {
 	OwnerID uint
 	Owner   User
 
-	// If an activity is temporary, it can be deleted after the booking has
-	// passed.
+	// Temporary activies are those which have an associated booking. All
+	// others are to be used as templates for others and are copied upon
+	// use.
 	Temporary bool
 
 	// Used to link to individual EquipmentItem(s).

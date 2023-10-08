@@ -128,6 +128,11 @@ func initRoutes(router *gin.Engine) {
 		r.POST("/password", handleChangePasswordAttempt)
 	}
 
+	r = router.Group("/inventory/", session.Authenticator(&Sessions, true))
+	{
+		r.GET("/", handleInventory)
+	}
+
 	r = router.Group("/api/")
 	{
 		r.Any("/", handleAPIRoot)
@@ -168,8 +173,8 @@ func main() {
 		log.Println("[WARNING]: Auto migrating database schema...")
 		if Database.AutoMigrate(
 			&data.User{},
-			&data.Booking{}, &data.EquipmentSet{},
-			&data.EquipmentItem{},
+			&data.Booking{}, &data.Activity{},
+			&data.EquipmentSet{}, &data.EquipmentItem{},
 		) != nil {
 			log.Fatalln("Database migration failed")
 		}
