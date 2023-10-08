@@ -10,6 +10,8 @@
 
 function onsuccess()
 {
+	$("#savingSpinner").addClass("d-none");
+
 	$("#saveFailure").addClass("d-none");
 	$("#saveSuccess").removeClass("d-none");
 
@@ -23,6 +25,8 @@ function onsuccess()
 
 function onfail()
 {
+	$("#savingSpinner").addClass("d-none");
+
 	$("#saveFailure").removeClass("d-none");
 	$("#saveSuccess").addClass("d-none");
 
@@ -42,6 +46,5 @@ function saveUser(e)
 
 	json_form("form", "POST", "/api/user/edit/" + userid, onsuccess, onfail);
 
-	$("#savingSpinner").addClass("d-none");
 	$("form").removeClass("was-validated");
 }
