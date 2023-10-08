@@ -20,7 +20,7 @@ func handleInventory(c *gin.Context) {
 	}
 
 	for i, e := range eq {
-		b, err := e.Bookings(time.Now(), time.Now().Add(24*time.Hour))
+		b, err := e.DailyBookings(time.Now())
 		if err != nil {
 			internalError(c, err)
 			return

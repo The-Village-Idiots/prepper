@@ -69,6 +69,15 @@ func (e *EquipmentItem) Bookings(start, end time.Time) ([]Booking, error) {
 	return bm, nil
 }
 
+// DailyBookings returns any bookings which lie in the same day as the given
+// time.
+func (e *EquipmentItem) DailyBookings(t time.Time) ([]Booking, error) {
+	trunc := t.Truncate(24 * time.Hour)
+	start, end := trunc, trunc.Add(24*time.Hour)
+
+	return e.Bookings(start, end)
+}
+
 // Usage returns the number of these items which are requisitioned for use
 // between the given time periods.
 func (e *EquipmentItem) Usage(start, end time.Time) (int, error) {
@@ -91,9 +100,11 @@ func (e *EquipmentItem) Usage(start, end time.Time) (int, error) {
 
 // DailyUsage returns the usage of the item on the given day. The begin and end
 // period are taken as midnight on the given day up to midnight on the next
-// day.
+// day. The time T is taken truncated down to the day.
 func (e *EquipmentItem) DailyUsage(t time.Time) (int, error) {
-	start, end := t, t.Add(24*time.Hour)
+	trunc := t.Truncate(24 * time.Hour)
+	start, end := trunc, trunc.Add(24*time.Hour)
+
 	return e.Usage(start, end)
 }
 
