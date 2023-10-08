@@ -11,6 +11,8 @@ import (
 
 // handleInventory is the handler for "/inventory/".
 func handleInventory(c *gin.Context) {
+	fmt.Fprintln(c.Writer, "---BEGIN INVENTORY REPORT---")
+
 	eq, err := data.GetEquipment(Database)
 	if err != nil {
 		internalError(c, err)
@@ -29,7 +31,7 @@ func handleInventory(c *gin.Context) {
 			return
 		}
 
-		fmt.Fprintf(c.Writer, "#%d\t%v %v [IN TOTAL TODAY: %d]\n", i, e, b, u)
+		fmt.Fprintf(c.Writer, "#%d\t%s -- %d in use by %d bookings, %d in total\n", i, e.Name, u, len(b), e.Quantity)
 	}
 
 	c.String(http.StatusOK, "---END INVENTORY REPORT---")
