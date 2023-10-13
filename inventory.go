@@ -34,10 +34,24 @@ func NewAnnotatedItemTime(i data.EquipmentItem, start, end *time.Time) (an Annot
 			return an, fmt.Errorf("new annotated item: %w", err)
 		}
 
+		an.Use, err = i.Usage(*start, *end)
+		if err != nil {
+			return an, fmt.Errorf("new annotated item: %w", err)
+		}
+
+		an.Balance, err = i.NetQuantity(*start, *end)
+		if err != nil {
+			return an, fmt.Errorf("new annotated item: %w", err)
+		}
+
 		return
 	}
 
 	an.DailyBookings, err = i.DailyBookings(time.Now())
+	if err != nil {
+		return an, fmt.Errorf("new annotated item: %w", err)
+	}
+	an.DailyUse, err = i.DailyUsage(time.Now())
 	if err != nil {
 		return an, fmt.Errorf("new annotated item: %w", err)
 	}
