@@ -132,7 +132,7 @@ func initRoutes(router *gin.Engine) {
 	{
 		r.GET("/", handleInventory)
 		r.GET("/item/:id", handleInventory)
-		r.GET("/item/new", handleInventory)
+		r.GET("/new", handleInventory)
 	}
 
 	r = router.Group("/api/")
