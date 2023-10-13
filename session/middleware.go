@@ -1,6 +1,7 @@
 package session
 
 import (
+	"log"
 	"net/http"
 
 	"github.com/ejv2/prepper/data"
@@ -29,11 +30,16 @@ func (r RequireAuthentication) doFail(c *gin.Context) {
 	c.AbortWithStatus(http.StatusForbidden)
 }
 
+func (r RequireAuthentication) logReject(c *gin.Context, reason string, uid uint) {
+	log.Print("Attempted unauthorized access by UID ", uid, " to ", c.Request.RequestURI, " (", reason, ")")
+}
+
 func (r RequireAuthentication) Handle(c *gin.Context) {
 	s := r.Start(c)
 	defer s.Update()
 
 	if !s.SignedIn {
+		r.logReject(c, "not authenticated", s.UserID)
 		r.doFail(c)
 	}
 }
@@ -65,11 +71,13 @@ func (r RequirePermissions) Handle(c *gin.Context) {
 
 	u, err := data.GetUser(r.Database, s.UserID)
 	if err != nil {
+		r.logReject(c, "invalid auth token", s.UserID)
 		r.doFail(c)
 		return
 	}
 
 	if !u.Can(uint8(r.Minimum)) {
+		r.logReject(c, "insufficient permissions", s.UserID)
 		s.Logout()
 		r.doFail(c)
 		return
