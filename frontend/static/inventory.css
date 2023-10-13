@@ -1,0 +1,10 @@
+/*
+ * Styling for inventory tables
+ * Copyright (C) Ethan Marshall - 2023
+ * Part of A-Level Computer Science 2024
+ */
+
+.item-unavailable {
+	text-decoration: line-through;
+	color: gray;
+}

@@ -1,0 +1,20 @@
+/*
+ * itemsearch.js -- items table search handling
+ * Adapted from link.js
+ * Copyright (C) Ethan Marshall 2023
+ * Part of A-Level Computing 2024
+ */
+
+function update_search()
+{
+	$("#itemsTable tr").filter(function() {
+		return true;
+	}).show();
+
+
+	if ($("#itemSearch").val() != "") {
+		$("#itemsTable tr").filter(function() {
+			return $(this).html().toLowerCase().indexOf($("#itemSearch").val()) === -1;
+		}).hide();
+	}
+}
