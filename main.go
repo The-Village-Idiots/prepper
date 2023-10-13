@@ -128,9 +128,11 @@ func initRoutes(router *gin.Engine) {
 		r.POST("/password", handleChangePasswordAttempt)
 	}
 
-	r = router.Group("/inventory/", session.Authenticator(&Sessions, true))
+	r = router.Group("/inventory/", session.Permissions(&Sessions, Database, data.CapManageInventory, true))
 	{
 		r.GET("/", handleInventory)
+		r.GET("/item/:id", handleInventory)
+		r.GET("/item/new", handleInventory)
 	}
 
 	r = router.Group("/api/")
