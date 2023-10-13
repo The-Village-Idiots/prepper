@@ -24,27 +24,33 @@ type AnnotatedItem struct {
 
 // NewAnnotatedItemTime returns a new AnnotatedItem from the given equipment
 // item. NewAnnotatedItem uses the passed start and end times. If start or end
-// ar nil, only daily timebases are used.
+// ar nil, the current time is used (+- 1 hour).
 func NewAnnotatedItemTime(i data.EquipmentItem, start, end *time.Time) (an AnnotatedItem, err error) {
 	an = AnnotatedItem{EquipmentItem: i}
 
-	if start != nil && end != nil {
-		an.Bookings, err = i.Bookings(*start, *end)
-		if err != nil {
-			return an, fmt.Errorf("new annotated item: %w", err)
-		}
+	// If start/end is nil, fill in default times.
+	if start == nil {
+		tmp := time.Now()
+		start = &tmp
+	}
+	if end == nil {
+		tmp := time.Now().Add(1 * time.Hour)
+		end = &tmp
+	}
 
-		an.Use, err = i.Usage(*start, *end)
-		if err != nil {
-			return an, fmt.Errorf("new annotated item: %w", err)
-		}
+	an.Bookings, err = i.Bookings(*start, *end)
+	if err != nil {
+		return an, fmt.Errorf("new annotated item: %w", err)
+	}
 
-		an.Balance, err = i.NetQuantity(*start, *end)
-		if err != nil {
-			return an, fmt.Errorf("new annotated item: %w", err)
-		}
+	an.Use, err = i.Usage(*start, *end)
+	if err != nil {
+		return an, fmt.Errorf("new annotated item: %w", err)
+	}
 
-		return
+	an.Balance, err = i.NetQuantity(*start, *end)
+	if err != nil {
+		return an, fmt.Errorf("new annotated item: %w", err)
 	}
 
 	an.DailyBookings, err = i.DailyBookings(time.Now())
