@@ -13,7 +13,7 @@ function update_search()
 
 
 	if ($("#itemSearch").val() != "") {
-		$("#itemsTable tr").filter(function() {
+		$("tr.item-searchable").filter(function() {
 			return $(this).html().toLowerCase().indexOf($("#itemSearch").val()) === -1;
 		}).hide();
 	}

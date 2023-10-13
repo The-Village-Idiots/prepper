@@ -32,7 +32,7 @@
 
 					<tbody>
 						{{range .Inventory}}
-							<tr class="{{if not .Available}}item-unavailable{{end}}">
+							<tr class="{{if not .Available}}item-unavailable{{end}} item-searchable">
 								<td>{{.ID}}</td>
 								<td>{{.Name}}</td>
 								<td>{{.Quantity}}</td>
