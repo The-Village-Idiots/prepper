@@ -14,7 +14,7 @@ function update_search()
 
 	if ($("#itemSearch").val() != "") {
 		$("tr.item-searchable").filter(function() {
-			return $(this).html().toLowerCase().indexOf($("#itemSearch").val()) === -1;
+			return $(this).html().toLowerCase().indexOf($("#itemSearch").val().toLowerCase()) === -1;
 		}).hide();
 	}
 }
