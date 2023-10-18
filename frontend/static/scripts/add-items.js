@@ -113,15 +113,20 @@ function update_item(e)
 		return;
 	}
 
+	// Update status icons
 	$("#" + formid + "status .error-icon").addClass("d-none");
 	$("#" + formid + "status .ok-icon").addClass("d-none");
 	$("#" + formid + "status .saving-icon").removeClass("d-none");
 
+	// Update table fields
 	$("#" + formid + "name").text($("#" + formid + " .name-input").val());
 	$("#" + formid + "quantity").text($("#" + formid + " .quantity-input").val());
 
-	working_id = formid;
+	// Collapse the collapse
+	var bsCollapse = new bootstrap.Collapse("#" + formid);
+	bsCollapse.hide();
 
+	working_id = formid;
 	setTimeout(function() {
 		json_form("#" + formid, "POST", "/api/item/"+id+"/edit", on_update_success, on_update_fail);
 	}, 100);
