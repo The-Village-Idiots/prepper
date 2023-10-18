@@ -37,6 +37,7 @@ function add_item()
 	$("#newrowid").text(current_id - 1).attr("id", id + "id")
 	$("#newrowname").text(name).attr("id", id + "name")
 	$("#newrowstatus").attr("id", id + "status")
+	$("#newrowquantity").text("1").attr("id", id + "quantity")
 
 	/* create item in database */
 	create_item(id, name);
@@ -115,6 +116,9 @@ function update_item(e)
 	$("#" + formid + "status .error-icon").addClass("d-none");
 	$("#" + formid + "status .ok-icon").addClass("d-none");
 	$("#" + formid + "status .saving-icon").removeClass("d-none");
+
+	$("#" + formid + "name").text($("#" + formid + " .name-input").val());
+	$("#" + formid + "quantity").text($("#" + formid + " .quantity-input").val());
 
 	working_id = formid;
 
