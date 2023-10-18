@@ -104,3 +104,31 @@ func handleInventory(c *gin.Context) {
 
 	c.HTML(http.StatusOK, "inventory.gohtml", dat)
 }
+
+// handleItem is the handler for "/inventory/[ITEM]".
+//
+// Returns an HTML edit page for the given item ID.
+func handleItem(c *gin.Context) {
+}
+
+// handleNewItem is the handler for "/inventory/new".
+//
+// Returns an HTML page with some JavaScript forms for creating new items in
+// bulk. Item creation itself is handled via the API.
+func handleNewItem(c *gin.Context) {
+	s := Sessions.Start(c)
+	defer s.Update()
+
+	ddat, err := NewDashboardData(s)
+	if err != nil {
+		internalError(c, err)
+		return
+	}
+
+	dat := struct {
+		DashboardData
+		Inventory []data.EquipmentItem
+	}{ddat, nil}
+
+	c.HTML(http.StatusOK, "inventory-add.gohtml", dat)
+}

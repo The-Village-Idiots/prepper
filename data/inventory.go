@@ -13,17 +13,17 @@ import (
 type EquipmentItem struct {
 	*gorm.Model
 
-	Name        string
-	Description string
+	Name        string `json:"name"`
+	Description string `json:"description"`
 
-	Quantity uint
+	Quantity uint `json:"quantity"`
 	// Availability override. If false, quantity is treated as though zero.
-	Available bool
+	Available bool `json:"available"`
 
-	HazardVoltage bool
-	HazardToxic   bool
-	HazardLazer   bool
-	HazardMisc    bool
+	HazardVoltage bool `json:"hazard_voltage"`
+	HazardToxic   bool `json:"hazard_toxic"`
+	HazardLazer   bool `json:"hazard_lazer"`
+	HazardMisc    bool `json:"hazard_misc"`
 
 	// For convenience.
 	db *gorm.DB
@@ -134,4 +134,17 @@ func GetEquipment(db *gorm.DB) ([]EquipmentItem, error) {
 	}
 
 	return eq, nil
+}
+
+// GetItem retrieves the equipment item with the given ID from the database,
+// preloading relations.
+func GetEquipmentItem(db *gorm.DB, id uint) (EquipmentItem, error) {
+	var i EquipmentItem
+	if err := db.Where(&EquipmentItem{Model: &gorm.Model{ID: id}}).
+		First(&i).Error; err != nil {
+
+		return i, fmt.Errorf("get equipment item %d: %w", id, err)
+	}
+
+	return i, nil
 }

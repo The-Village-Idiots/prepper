@@ -1,6 +1,7 @@
 package main
 
 import (
+	"log"
 	"net/http"
 	"strconv"
 
@@ -106,4 +107,126 @@ func handleAPIEditUser(c *gin.Context) {
 	}
 
 	c.JSON(http.StatusOK, u.User)
+}
+
+// handleAPICreateItem is the handler for "/api/item/create"
+//
+// Returns the JSON-encoded new item details.
+func handleAPICreateItem(c *gin.Context) {
+	s := Sessions.Start(c)
+	defer s.Update()
+
+	us, err := data.GetUser(Database, s.UserID)
+	if err != nil {
+		c.JSON(http.StatusForbidden, gin.H{
+			"error":   "Access Denied",
+			"message": "Authentication Failure",
+		})
+		return
+	}
+
+	if !us.Can(data.CapManageInventory) {
+		c.JSON(http.StatusForbidden, gin.H{
+			"error":   "Access Denied",
+			"message": "Insufficient Privilege Level",
+		})
+		return
+	}
+
+	dat := data.EquipmentItem{Model: &gorm.Model{}}
+	err = c.BindJSON(&dat)
+	if err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{
+			"error":   "Bad Body Syntax",
+			"message": "Malformed JSON: " + err.Error(),
+		})
+		return
+	}
+
+	if dat.ID != 0 {
+		c.JSON(http.StatusBadRequest, gin.H{
+			"error":   "Invalid Item Specification",
+			"message": "Refusing to create with specific ID",
+		})
+		return
+	}
+
+	if err := Database.Create(&dat).Error; err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{
+			"error":   "Database Server Error",
+			"message": "Database SQL Error: " + err.Error(),
+		})
+		return
+	}
+
+	c.JSON(http.StatusOK, dat)
+}
+
+// handleAPICreateItem is the handler for "/api/item/[ID]/edit"
+//
+// Returns the JSON-encoded new item details.
+func handleAPIEditItem(c *gin.Context) {
+	s := Sessions.Start(c)
+	defer s.Update()
+
+	us, err := data.GetUser(Database, s.UserID)
+	if err != nil {
+		c.JSON(http.StatusForbidden, gin.H{
+			"error":   "Access Denied",
+			"message": "Authentication Failure",
+		})
+		return
+	}
+
+	if !us.Can(data.CapManageInventory) {
+		c.JSON(http.StatusForbidden, gin.H{
+			"error":   "Access Denied",
+			"message": "Insufficient Privilege Level",
+		})
+		return
+	}
+
+	suid := c.Param("id")
+	luid, err := strconv.ParseUint(suid, 10, 32)
+	id := uint(luid)
+	if err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{
+			"error":   "Invalid Item ID",
+			"message": "Item ID Parse Error: " + err.Error(),
+		})
+		return
+	}
+
+	i, err := data.GetEquipmentItem(Database, id)
+	oldid := i.ID
+
+	err = c.BindJSON(&i)
+	if err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{
+			"error":   "Bad Body Syntax",
+			"message": "Malformed JSON: " + err.Error(),
+		})
+		return
+	}
+
+	// Enforce that IDs are read only
+	if oldid != i.ID {
+		c.JSON(http.StatusBadRequest, gin.H{
+			"error":   "Invalid Item Specification",
+			"message": "Item ID may not be modified",
+		})
+		return
+	}
+
+	log.Printf("user %s (%d) updates item ID %d: new record: %v", us.DisplayName(), us.ID, id, i)
+
+	if err := Database.Updates(&i).Error; err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{
+			"error":   "Database Server Error",
+			"message": "Database SQL Error: " + err.Error(),
+		})
+		return
+	}
+
+	c.JSON(http.StatusOK, i)
 }
