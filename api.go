@@ -162,6 +162,17 @@ func handleAPICreateItem(c *gin.Context) {
 	c.JSON(http.StatusOK, dat)
 }
 
+// handleAPIBadEditItem is the handler for "/api/item/edit".
+//
+// This route is designed to catch bad requests from incorrectly created items
+// on the client.
+func handleAPIBadEditItem(c *gin.Context) {
+	c.JSON(http.StatusBadRequest, gin.H{
+		"error":   "Bad Request",
+		"message": "Incorrect URL format (need item ID to edit): want /api/item/[ID]/edit",
+	})
+}
+
 // handleAPICreateItem is the handler for "/api/item/[ID]/edit"
 //
 // Returns the JSON-encoded new item details.

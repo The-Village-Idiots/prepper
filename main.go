@@ -143,6 +143,7 @@ func initRoutes(router *gin.Engine) {
 		r = r.Group("/item/", session.Permissions(&Sessions, Database, data.CapManageInventory, false))
 		{
 			r.POST("/create", handleAPICreateItem)
+			r.Any("/edit", handleAPIBadEditItem)
 			r.POST("/:id/edit", handleAPIEditItem)
 		}
 	}
