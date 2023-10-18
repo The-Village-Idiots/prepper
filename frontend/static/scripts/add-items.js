@@ -51,6 +51,7 @@ function create_item(formid, name)
 		"name": name,
 		"description": name,
 		"available": true,
+		"quantity": 1,
 	};
 	var dat = JSON.stringify(obj);
 	var req = new XMLHttpRequest();
@@ -60,8 +61,14 @@ function create_item(formid, name)
 	req.onreadystatechange = function() {
 		if (this.readyState == 4) {
 			$("#" + formid + "status .saving-icon").addClass("d-none");
+			$("#" + formid + "status .error-icon").addClass("d-none");
 
-			var response = JSON.parse(this.responseText);
+			try {
+				var response = JSON.parse(this.responseText);
+			} catch {
+				$("#" + formid + "status .error-icon").removeClass("d-none");
+				return;
+			}
 
 			if (this.status == 200) {
 				$("#" + formid + "status .ok-icon").removeClass("d-none");
@@ -104,6 +111,11 @@ function update_item(e)
 	var frm = $(e.srcElement);
 	var id = real_item_id(frm);
 	var formid = item_id(frm);
+
+	// If we don't have a real ID yet, make the item to obtain one.
+	if (id == "") {
+		create_item(formid, $("#" + formid + " .name-input").val());
+	}
 
 	var val = frm[0].checkValidity();
 	frm.addClass("was-validated");
