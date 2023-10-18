@@ -9,14 +9,28 @@
  */
 function serialize_json(s)
 {
-	var arr = $(s).serializeArray();
-	var json = {};
+	// var inputs = document.getElementById(s).getElementsByTagName("input");
+	var inputs = $(s + " input");
+	var result = {};
 
-	$.map(arr, function(n, _){
-		json[n['name']] = n['value'];
-	});
+	for (var i = 0; i < inputs.length; i++) {
+		var value;
+		switch (inputs[i].type) {
+			case "number":
+				value = inputs[i].value * 1;
+				break;
+			case "checkbox":
+				value = (inputs[i].checked) ? true : false;
+				break;
+			default:
+				value = inputs[i].value;
+				break;
+		}
 
-	return JSON.stringify(json);
+		result[inputs[i].name] = value;
+	}
+
+	return JSON.stringify(result);
 }
 
 /*
