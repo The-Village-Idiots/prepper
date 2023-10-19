@@ -22,6 +22,20 @@ type AnnotatedItem struct {
 	Balance  int
 }
 
+// DailyBooked returns the total number of items booked for the current day.
+func (a AnnotatedItem) DailyBooked() int {
+	count := 0
+	for _, b := range a.DailyBookings {
+		for _, e := range b.Activity.Equipment {
+			if e.ItemID == a.ID {
+				count += int(e.Quantity)
+			}
+		}
+	}
+
+	return count
+}
+
 // NewAnnotatedItemTime returns a new AnnotatedItem from the given equipment
 // item. NewAnnotatedItem uses the passed start and end times. If start or end
 // ar nil, the current time is used (+- 1 hour).
@@ -111,6 +125,9 @@ func handleInventory(c *gin.Context) {
 func handleItem(c *gin.Context) {
 }
 
+func handleItemLocate(c *gin.Context) {
+}
+
 // handleNewItem is the handler for "/inventory/new".
 //
 // Returns an HTML page with some JavaScript forms for creating new items in
@@ -131,4 +148,41 @@ func handleNewItem(c *gin.Context) {
 	}{ddat, nil}
 
 	c.HTML(http.StatusOK, "inventory-add.gohtml", dat)
+}
+
+func handleInventoryReport(c *gin.Context) {
+	s := Sessions.Start(c)
+	defer s.Update()
+
+	ddat, err := NewDashboardData(s)
+	if err != nil {
+		internalError(c, err)
+		return
+	}
+
+	e, err := data.GetEquipment(Database)
+	if err != nil {
+		internalError(c, err)
+		return
+	}
+
+	dat := struct {
+		DashboardData
+		Inventory []AnnotatedItem
+	}{ddat, make([]AnnotatedItem, 0, len(e))}
+
+	for _, eq := range e {
+		i, err := NewAnnotatedItem(eq)
+		if err != nil {
+			internalError(c, err)
+			return
+		}
+
+		dat.Inventory = append(dat.Inventory, i)
+	}
+
+	c.HTML(http.StatusOK, "inventory-report.gohtml", dat)
+}
+
+func handleInventoryLocate(c *gin.Context) {
 }

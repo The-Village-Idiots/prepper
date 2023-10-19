@@ -15,6 +15,7 @@ import (
 type DashboardData struct {
 	User     data.User
 	Greeting string
+	Time     time.Time
 }
 
 // NewDashboardData constructs a new DashboardData object for use by the
@@ -39,7 +40,7 @@ func NewDashboardData(s session.Session) (DashboardData, error) {
 		g = "Good afternoon"
 	}
 
-	return DashboardData{u, g}, nil
+	return DashboardData{u, g, time.Now().Local()}, nil
 }
 
 // handleDashboard is the handler for "/dashboard/"
