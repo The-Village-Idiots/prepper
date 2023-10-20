@@ -231,7 +231,14 @@ func handleAPIEditItem(c *gin.Context) {
 
 	log.Printf("user %s (%d) updates item ID %d: new record: %v", us.DisplayName(), us.ID, id, i)
 
-	if err := Database.Updates(&i).Error; err != nil {
+	err = Database.Updates(&i).
+		Update("hazard_voltage", i.HazardVoltage).
+		Update("hazard_lazer", i.HazardLazer).
+		Update("hazard_toxic", i.HazardToxic).
+		Update("hazard_misc", i.HazardMisc).
+		Update("available", i.Available).Error
+
+	if err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{
 			"error":   "Database Server Error",
 			"message": "Database SQL Error: " + err.Error(),

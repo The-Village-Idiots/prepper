@@ -1,0 +1,112 @@
+<!DOCTYPE html>
+
+<html>
+	<head>
+		{{template "head.gohtml" "Edit Item"}}
+
+		<script>
+			const itemid = {{.Item.ID}};
+		</script>
+		<script src="/assets/scripts/edit-item.js"></script>
+	</head>
+
+	<body>
+		{{template "dashnav.gohtml" .}}
+
+		<div class="container container-fluid mt-3">
+			<h1>Editing {{.Item.Name}}</h1>
+			<hr>
+			
+			<form class="needs-validation" onsubmit="return saveItem(event)">
+				<div class="mt-4">
+					<h3>Basic Details</h3>
+
+					<div class="row mt-2">
+						<div class="col-lg">
+							<label for="name" class="form-label">Name:</label>
+							<input name="name" id="name" class="form-control" value="{{.Item.Name}}">
+						</div>
+
+						<div class="col-lg">
+							<label for="description" class="form-label">Description:</label>
+							<textarea type="text" name="description" id="description" class="form-control" rows=3>{{.Item.Description}}</textarea>
+						</div>
+					</div>
+				</div>
+
+				<hr>
+
+				<div class="mt-4">
+					<h3>Inventory Details</h3>
+
+					<div class="row mt-2">
+						<div class="col-lg-2">
+							<label for="quantity" class="form-label">Quantity:</label>
+							<input name="quantity" id="quantity" class="form-control" value="{{.Item.Quantity}}" type="number">
+						</div>
+
+						<div class="col-lg-auto"></div>
+					</div>
+
+					<div class="row mt-2 p-2">
+						<div class="col-lg form-check">
+							<input name="available" id="available" class="form-check-input" value="" type="checkbox" {{if .Item.Available}}checked{{end}}>
+							<label class="form-check-label" for="available">Mark item as available</label>
+						</div>
+					</div>
+				</div>
+
+				<hr>
+
+				<div class="mt-4">
+					<h3>Hazard Details</h3>
+
+					<div class="row mt-2 p-2">
+						<div class="col-lg form-check">
+							<input name="hazard_voltage" id="hazard_voltage" class="form-check-input" value="" type="checkbox" {{if .Item.HazardVoltage}}checked{{end}}>
+							<label class="form-check-label" for="hazard_voltage">Voltage Hazard</label>
+						</div>
+
+						<div class="col-lg form-check">
+							<input name="hazard_lazer" id="hazard_lazer" class="form-check-input" value="" type="checkbox" {{if .Item.HazardLazer}}checked{{end}}>
+							<label class="form-check-label" for="hazard_lazer">Lazer Hazard</label>
+						</div>
+
+						<div class="col-lg form-check">
+							<input name="hazard_toxic" id="hazard_toxic" class="form-check-input" value="" type="checkbox" {{if .Item.HazardToxic}}checked{{end}}>
+							<label class="form-check-label" for="hazard_toxic">Toxicity Hazard</label>
+						</div>
+
+						<div class="col-lg form-check">
+							<input name="hazard_misc" id="hazard_misc" class="form-check-input" value="" type="checkbox" {{if .Item.HazardMisc}}checked{{end}}>
+							<label class="form-check-label" for="hazard_misc">Other Hazard</label>
+						</div>
+					</div>
+				</div>
+
+				<hr>
+
+				<div class="mt-4 pb-2">
+					<div class="row">
+						<button id="saveBtn" type="submit" class="col-auto btn btn-primary">
+							Save
+
+
+							<svg id="saveSuccess" class="d-none" xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-check-lg" viewBox="0 0 16 16">
+							  <path d="M12.736 3.97a.733.733 0 0 1 1.047 0c.286.289.29.756.01 1.05L7.88 12.01a.733.733 0 0 1-1.065.02L3.217 8.384a.757.757 0 0 1 0-1.06.733.733 0 0 1 1.047 0l3.052 3.093 5.4-6.425a.247.247 0 0 1 .02-.022Z"/>
+							</svg>
+
+							<span id="savingSpinner" class="spinner-border spinner-border-sm text-light d-none"></span>
+						</button>
+
+						
+					</div>
+
+					<div class="row">
+						<p id="saveFailure" class="text-danger d-none">Data failed to save. Please contact your system administrator.</p>
+					</div>
+				</div>
+			</form>
+		</div>
+	</body>
+</html>

@@ -133,7 +133,21 @@ func handleItem(c *gin.Context) {
 		return
 	}
 
-	e, err := data.GetEquipment(Database)
+	siid := c.Param("id")
+	lid, err := strconv.ParseUint(siid, 10, 32)
+	id := uint(lid)
+	if err != nil {
+		c.String(http.StatusBadRequest, "Invalid Item ID")
+		return
+	}
+
+	item, err := data.GetEquipmentItem(Database, id)
+	if err != nil {
+		c.String(http.StatusNotFound, "Item Not Found")
+		return
+	}
+
+	aitem, err := NewAnnotatedItem(item)
 	if err != nil {
 		internalError(c, err)
 		return
@@ -141,20 +155,10 @@ func handleItem(c *gin.Context) {
 
 	dat := struct {
 		DashboardData
-		Inventory []AnnotatedItem
-	}{ddat, make([]AnnotatedItem, 0, len(e))}
+		Item AnnotatedItem
+	}{ddat, aitem}
 
-	for _, eq := range e {
-		i, err := NewAnnotatedItem(eq)
-		if err != nil {
-			internalError(c, err)
-			return
-		}
-
-		dat.Inventory = append(dat.Inventory, i)
-	}
-
-	c.HTML(http.StatusOK, "inventory.gohtml", dat)
+	c.HTML(http.StatusOK, "item.gohtml", dat)
 }
 
 func handleItemLocate(c *gin.Context) {
@@ -197,8 +201,6 @@ func handleItemLocate(c *gin.Context) {
 	dayStart := time.Now().Local().Truncate(24 * time.Hour)
 	minuteStart := time.Now().Local().Truncate(time.Minute)
 	minuteEnd := minuteStart.Add(time.Minute)
-
-	fmt.Println("time:", time.Now().Local(), "others:", minuteStart, minuteEnd)
 
 	dat.Bookings, err = item.Bookings(minuteStart, minuteEnd)
 	if err != nil {
