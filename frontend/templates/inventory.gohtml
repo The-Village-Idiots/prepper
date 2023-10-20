@@ -24,6 +24,7 @@
 							<th scope="col">#</th>
 							<th scope="col">Name</th>
 							<th scope="col">Quantity</th>
+							<th scope="col">Usage Now</th>
 							<th scope="col">Usage Today</th>
 							<th scope="col">Currently Available</th>
 							<th scope="col"></th>
@@ -36,6 +37,7 @@
 								<td>{{.ID}}</td>
 								<td>{{.Name}}</td>
 								<td>{{.Quantity}}</td>
+								<td>{{.Use}}</td>
 								<td>{{.DailyUse}}</td>
 								<td {{if lt .Balance 0}}class="text-danger"{{end}}>{{.Balance}}</td>
 								<td>
