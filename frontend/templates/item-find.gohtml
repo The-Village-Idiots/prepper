@@ -1,0 +1,93 @@
+<!DOCTYPE html>
+
+{{- /* Used later to avoid shadowing */ -}}
+{{- $item := .Item.EquipmentItem -}}
+
+<html>
+	<head>
+		{{template "head.gohtml" "Locate an Item"}}
+	</head>
+
+	<body>
+		{{template "dashnav.gohtml" .}}
+
+		<div class="container container-fluid mt-3">
+			<h1>Possible Locations for {{.Item.Name}}</h1>
+			<hr>
+
+			<div class="mt-4">
+				<p>
+					One or more {{.Item.Name}} is reserved for <strong>{{len .Item.DailyBookings}}</strong> bookings today.
+					Of those bookings, <strong>{{len .Item.Bookings}}</strong> are currently ongoing.
+					Possible locations and associated bookings are displayed below.
+				</p>
+
+				<h2>Ongoing Bookings</h2>
+				{{if eq 0 (len .Bookings)}}
+					<em class="text-muted">No Current Bookings</em>
+				{{else}}
+
+					<table class="table table-striped mt-2">
+						<thead>
+							<tr>
+								<th scope="col">Location</th>
+								<th scope="col">Activity</th>
+								<th scope="col">Booked By</th>
+								<th scope="col">Start Time</th>
+								<th scope="col">End Time</th>
+								<th scope="col">Quantity</th>
+							</tr>
+						</thead>
+
+						<tbody>
+							{{range .Bookings}}
+								<tr>
+									<td><u><strong>{{.Location}}</strong></u></td>
+									<td>{{.Activity.Title}}</td>
+									<td>{{.Owner.DisplayName}} ({{.Owner.Username}})</td>
+									<td>{{.StartTime}}</td>
+									<td>{{.EndTime}}</td>
+									<td>{{.Activity.ItemQuantity $item}}</td>
+								</tr>
+							{{end}}
+						</tbody>
+					</table>
+				{{end}}
+
+				<hr>
+				
+				<h2>Possible Previous Bookings</h2>
+				{{if eq 0 (len .PastBookings)}}
+					<em class="text-muted">No Past Bookings</em>
+				{{else}}
+
+					<table class="table table-striped mt-2">
+						<thead>
+							<tr>
+								<th scope="col">Location</th>
+								<th scope="col">Activity</th>
+								<th scope="col">Booked By</th>
+								<th scope="col">Start Time</th>
+								<th scope="col">End Time</th>
+								<th scope="col">Quantity</th>
+							</tr>
+						</thead>
+
+						<tbody>
+							{{range .PastBookings}}
+								<tr>
+									<td><u><strong>{{.Location}}</strong></u></td>
+									<td>{{.Activity.Title}}</td>
+									<td>{{.Owner.DisplayName}} ({{.Owner.Username}})</td>
+									<td>{{.StartTime}}</td>
+									<td>{{.EndTime}}</td>
+									<td>{{.Activity.ItemQuantity $item}}</td>
+								</tr>
+							{{end}}
+						</tbody>
+					</table>
+				{{end}}
+			</div>
+		</div>
+	</body>
+</html>

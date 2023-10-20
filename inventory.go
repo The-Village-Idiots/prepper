@@ -3,6 +3,7 @@ package main
 import (
 	"fmt"
 	"net/http"
+	"strconv"
 	"time"
 
 	"github.com/ejv2/prepper/data"
@@ -44,11 +45,11 @@ func NewAnnotatedItemTime(i data.EquipmentItem, start, end *time.Time) (an Annot
 
 	// If start/end is nil, fill in default times.
 	if start == nil {
-		tmp := time.Now()
+		tmp := time.Now().Truncate(time.Minute)
 		start = &tmp
 	}
 	if end == nil {
-		tmp := time.Now().Add(1 * time.Hour)
+		tmp := time.Now().Truncate(time.Hour).Add(time.Hour)
 		end = &tmp
 	}
 
@@ -123,9 +124,95 @@ func handleInventory(c *gin.Context) {
 //
 // Returns an HTML edit page for the given item ID.
 func handleItem(c *gin.Context) {
+	s := Sessions.Start(c)
+	defer s.Update()
+
+	ddat, err := NewDashboardData(s)
+	if err != nil {
+		internalError(c, err)
+		return
+	}
+
+	e, err := data.GetEquipment(Database)
+	if err != nil {
+		internalError(c, err)
+		return
+	}
+
+	dat := struct {
+		DashboardData
+		Inventory []AnnotatedItem
+	}{ddat, make([]AnnotatedItem, 0, len(e))}
+
+	for _, eq := range e {
+		i, err := NewAnnotatedItem(eq)
+		if err != nil {
+			internalError(c, err)
+			return
+		}
+
+		dat.Inventory = append(dat.Inventory, i)
+	}
+
+	c.HTML(http.StatusOK, "inventory.gohtml", dat)
 }
 
 func handleItemLocate(c *gin.Context) {
+	s := Sessions.Start(c)
+	defer s.Update()
+
+	ddat, err := NewDashboardData(s)
+	if err != nil {
+		internalError(c, err)
+		return
+	}
+
+	siid := c.Param("id")
+	lid, err := strconv.ParseUint(siid, 10, 32)
+	id := uint(lid)
+	if err != nil {
+		c.String(http.StatusBadRequest, "Invalid Item ID")
+		return
+	}
+
+	item, err := data.GetEquipmentItem(Database, id)
+	if err != nil {
+		c.String(http.StatusNotFound, "Item Not Found")
+		return
+	}
+
+	aitem, err := NewAnnotatedItem(item)
+	if err != nil {
+		internalError(c, err)
+		return
+	}
+
+	dat := struct {
+		DashboardData
+		Item         AnnotatedItem
+		Bookings     []data.Booking
+		PastBookings []data.Booking
+	}{ddat, aitem, []data.Booking{}, []data.Booking{}}
+
+	dayStart := time.Now().Local().Truncate(24 * time.Hour)
+	minuteStart := time.Now().Local().Truncate(time.Minute)
+	minuteEnd := minuteStart.Add(time.Minute)
+
+	fmt.Println("time:", time.Now().Local(), "others:", minuteStart, minuteEnd)
+
+	dat.Bookings, err = item.Bookings(minuteStart, minuteEnd)
+	if err != nil {
+		internalError(c, err)
+		return
+	}
+
+	dat.PastBookings, err = item.Bookings(dayStart, time.Now().Local())
+	if err != nil {
+		internalError(c, err)
+		return
+	}
+
+	c.HTML(http.StatusOK, "item-find.gohtml", dat)
 }
 
 // handleNewItem is the handler for "/inventory/new".
@@ -185,4 +272,53 @@ func handleInventoryReport(c *gin.Context) {
 }
 
 func handleInventoryLocate(c *gin.Context) {
+	s := Sessions.Start(c)
+	defer s.Update()
+
+	siid, ok := c.GetQuery("item")
+	if ok {
+		iid, err := strconv.ParseUint(siid, 10, 32)
+		if err != nil {
+			c.Redirect(http.StatusFound, "/inventory/locate?error")
+			return
+		}
+
+		_, err = data.GetEquipmentItem(Database, uint(iid))
+		if err != nil {
+			c.Redirect(http.StatusFound, "/inventory/locate?error")
+			return
+		}
+
+		c.Redirect(http.StatusFound, fmt.Sprint("/inventory/item/", iid, "/locate"))
+		return
+	}
+
+	ddat, err := NewDashboardData(s)
+	if err != nil {
+		internalError(c, err)
+		return
+	}
+
+	e, err := data.GetEquipment(Database)
+	if err != nil {
+		internalError(c, err)
+		return
+	}
+
+	dat := struct {
+		DashboardData
+		Inventory []AnnotatedItem
+	}{ddat, make([]AnnotatedItem, 0, len(e))}
+
+	for _, eq := range e {
+		i, err := NewAnnotatedItem(eq)
+		if err != nil {
+			internalError(c, err)
+			return
+		}
+
+		dat.Inventory = append(dat.Inventory, i)
+	}
+
+	c.HTML(http.StatusOK, "inventory-find.gohtml", dat)
 }

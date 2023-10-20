@@ -1,0 +1,37 @@
+<!DOCTYPE html>
+
+<html>
+	<head>
+		{{template "head.gohtml" "Locate an Item"}}
+	</head>
+
+	<body>
+		{{template "dashnav.gohtml" .}}
+
+		<div class="container container-fluid mt-3">
+			<h1>Locate an Item</h1>
+			<hr>
+
+			<div class="mt-4">
+				<p>
+					Enter an item to find and Prepper will locate any possible current locations for it.
+					Begin typing the name of an item and then select the full name from the list below.
+					Prepper will autofill the item ID for you.
+				</p>
+
+				<form action="/inventory/locate">
+					<label for="item">Item:</label>
+					<input name="item" id="item" list="items">
+					<datalist id="items">
+						{{range .Inventory}}
+							<option value="{{.ID}}">{{.Name}}</option>
+						{{end}}
+					</datalist>
+
+					<br>
+					<button class="btn btn-success mt-2" type="submit">Search</button>
+				</form> 
+			</div>
+		</div>
+	</body>
+</html>

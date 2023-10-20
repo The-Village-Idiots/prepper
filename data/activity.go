@@ -29,6 +29,18 @@ type Activity struct {
 	Equipment []EquipmentSet
 }
 
+// ItemQuantity returns the number of the given item requisitioned for this
+// activity, or zero if this item is not in use by this activity.
+func (a Activity) ItemQuantity(i EquipmentItem) uint {
+	for _, e := range a.Equipment {
+		if e.ItemID == i.ID {
+			return e.Quantity
+		}
+	}
+
+	return 0
+}
+
 // EquipmentSet is the link table for equipment used in an activity.
 type EquipmentSet struct {
 	*gorm.Model
