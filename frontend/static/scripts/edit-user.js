@@ -15,6 +15,7 @@ function onsuccess()
 	$("#saveFailure").addClass("d-none");
 	$("#saveSuccess").removeClass("d-none");
 
+	$("#saveBtn").removeClass("btn-danger");
 	$("#saveBtn").addClass("btn-success");
 
 	setTimeout(function() {
@@ -31,6 +32,7 @@ function onfail()
 	$("#saveSuccess").addClass("d-none");
 
 	$("#saveBtn").removeClass("btn-success");
+	$("#saveBtn").addClass("btn-danger");
 }
 
 function saveUser(e)
