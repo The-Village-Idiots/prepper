@@ -12,6 +12,13 @@
 			<h1>Locate an Item</h1>
 			<hr>
 
+			{{if .Error}}
+				<div class="alert alert-danger">
+					<strong>Item Location Failure</strong>
+					Invalid or unknown item ID
+				</div>
+			{{end}}
+
 			<div class="mt-4">
 				<p>
 					Enter an item to find and Prepper will locate any possible current locations for it.

@@ -295,6 +295,8 @@ func handleInventoryLocate(c *gin.Context) {
 		return
 	}
 
+	_, haserr := c.GetQuery("error")
+
 	ddat, err := NewDashboardData(s)
 	if err != nil {
 		internalError(c, err)
@@ -310,7 +312,8 @@ func handleInventoryLocate(c *gin.Context) {
 	dat := struct {
 		DashboardData
 		Inventory []AnnotatedItem
-	}{ddat, make([]AnnotatedItem, 0, len(e))}
+		Error     bool
+	}{ddat, make([]AnnotatedItem, 0, len(e)), haserr}
 
 	for _, eq := range e {
 		i, err := NewAnnotatedItem(eq)
