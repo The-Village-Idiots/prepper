@@ -44,11 +44,17 @@ func (e *EquipmentItem) Bookings(start, end time.Time) ([]Booking, error) {
 	//         -----REGION----
 	//           ---MATCH---
 	//                     ---MATCH---
+	//       -------MATCH---------
 	res := e.db.Model(&Booking{}).Joins("Activity").
-		Where("(? >= start_time AND ? <= end_time) OR (? <= start_time AND ? >= start_time AND ? <= end_time) OR (? <= end_time AND ? >= end_time)",
+		Where(`(? >= start_time AND ? <= end_time)
+			OR (? <= start_time AND ? >= start_time AND ? <= end_time)
+			OR (? <= end_time AND ? >= end_time)
+			OR (? <= start_time AND ? >= end_time)`,
 			start, end,
 			start, end, end,
+			start, end,
 			start, end).
+		Joins("Owner").
 		Preload("Activity.Equipment").
 		Preload("Activity.Equipment.Item").
 		Find(&b)
@@ -145,6 +151,8 @@ func GetEquipmentItem(db *gorm.DB, id uint) (EquipmentItem, error) {
 
 		return i, fmt.Errorf("get equipment item %d: %w", id, err)
 	}
+
+	i.db = db
 
 	return i, nil
 }
