@@ -60,7 +60,7 @@
 						<tr>
 							<th scope="col">Item</th>
 							<th scope="col">Bookings</th>
-							<th scope="col">Total Booked</th>
+							<th scope="col">Total Quantity Booked</th>
 							<th scope="col">Total Balance</th>
 							<th scope="col">Remarks</th>
 						</tr>
@@ -68,15 +68,17 @@
 
 					<tbody>
 						{{range .Inventory}}
-							<tr>
-								<td>{{.Name}}</td>
-								<td>{{len .DailyBookings}}</td>
-								<td>{{.DailyBooked}}</td>
-								<td>{{.Balance}}</td>
-								<td>
-									{{if lt .Balance 0}}<span class="text-warning">Overbooked</span>{{end}}
-								</td>
-							</tr>
+							{{if gt .DailyBooked 0}}
+								<tr>
+									<td>{{.Name}}</td>
+									<td>{{len .DailyBookings}}</td>
+									<td>{{.DailyBooked}}</td>
+									<td>{{.Balance}}</td>
+									<td>
+										{{if lt .Balance 0}}<span class="text-warning">Overbooked</span>{{end}}
+									</td>
+								</tr>
+							{{end}}
 						{{end}}
 					</tbody>
 				</table>
