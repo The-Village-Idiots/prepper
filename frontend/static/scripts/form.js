@@ -13,6 +13,9 @@ function serialize_json(s)
 	var inputs = $(s + " input");
 	var result = {};
 
+	var textareas = $(s + " textarea");
+	inputs.push(...textareas);
+
 	for (var i = 0; i < inputs.length; i++) {
 		var value;
 		switch (inputs[i].type) {
