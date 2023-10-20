@@ -23,6 +23,7 @@
 						<tr>
 							<th scope="col">#</th>
 							<th scope="col">Name</th>
+							<th scope="col" class="d-none d-lg-table-cell">Description</th>
 							<th scope="col">Quantity</th>
 							<th scope="col">Usage Now</th>
 							<th scope="col">Usage Today</th>
@@ -36,6 +37,7 @@
 							<tr class="{{if not .Available}}item-unavailable{{end}} item-searchable">
 								<td>{{.ID}}</td>
 								<td>{{.Name}}</td>
+								<td class="text-truncate d-none d-lg-table-cell" style="max-width: 370px">{{.Description}}</td>
 								<td>{{.Quantity}}</td>
 								<td>{{.Use}}</td>
 								<td>{{.DailyUse}}</td>
