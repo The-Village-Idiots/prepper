@@ -257,8 +257,9 @@ func handleInventoryReport(c *gin.Context) {
 
 	dat := struct {
 		DashboardData
-		Inventory []AnnotatedItem
-	}{ddat, make([]AnnotatedItem, 0, len(e))}
+		Inventory        []AnnotatedItem
+		PreviouslyBooked []AnnotatedItem
+	}{ddat, make([]AnnotatedItem, 0, len(e)), make([]AnnotatedItem, 0, len(e))}
 
 	for _, eq := range e {
 		i, err := NewAnnotatedItem(eq)
@@ -268,6 +269,17 @@ func handleInventoryReport(c *gin.Context) {
 		}
 
 		dat.Inventory = append(dat.Inventory, i)
+
+		today := time.Now().Local().Truncate(24 * time.Hour)
+		yesterday := today.Add(-24 * time.Hour)
+
+		old, err := eq.Bookings(yesterday, today)
+		if err == nil && len(old) != 0 {
+			iold, err := NewAnnotatedItemTime(eq, &yesterday, &today)
+			if err == nil {
+				dat.PreviouslyBooked = append(dat.PreviouslyBooked, iold)
+			}
+		}
 	}
 
 	c.HTML(http.StatusOK, "inventory-report.gohtml", dat)

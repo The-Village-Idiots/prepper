@@ -82,6 +82,34 @@
 						{{end}}
 					</tbody>
 				</table>
+
+				<h2>Previous Day's Bookings</h2>
+				<p>Shows bookings scheduled for the previous 24 hours</p>
+				<table class="table table-striped table-sm">
+					<thead>
+						<tr>
+							<th scope="col">Item</th>
+							<th scope="col">Bookings</th>
+							<th scope="col">Total Booked</th>
+							<th scope="col">Chcked</th>
+						</tr>
+					</thead>
+
+					<tbody>
+						{{range .PreviouslyBooked}}
+							{{if gt .DailyBooked 0}}
+								<tr>
+									<td>{{.Name}}</td>
+									<td>{{len .DailyBookings}}</td>
+									<td>{{.DailyBooked}}</td>
+									<td>
+										<input class="form-check form-check-input" type="checkbox">
+									</td>
+								</tr>
+							{{end}}
+						{{end}}
+					</tbody>
+				</table>
 			</div>
 		</div>
 	</body>
