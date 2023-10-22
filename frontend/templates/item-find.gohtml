@@ -22,6 +22,13 @@
 					Possible locations and associated bookings are displayed below.
 				</p>
 
+				{{if not .Item.Available}}
+					<div class="alert alert-warning">
+						<strong>Item Unavailable</strong> This item is marked as unavailable in the inventory records.
+						It may not have been assigned to any bookings, regardless of activity requirements.
+					</div>
+				{{end}}
+
 				<h2>Ongoing Bookings</h2>
 				{{if eq 0 (len .Bookings)}}
 					<em class="text-muted">No Current Bookings</em>
