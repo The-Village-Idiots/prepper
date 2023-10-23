@@ -1,6 +1,17 @@
 package data
 
-import "gorm.io/gorm"
+import (
+	"errors"
+	"fmt"
+
+	"gorm.io/gorm"
+)
+
+// Activity retrieval errors.
+var (
+	ErrInvalidActivityID = errors.New("invalid activity ID")
+	ErrActivityNotFound  = errors.New("activity not found")
+)
 
 // An Activity is the details for a booking. It contains needed equipment and
 // the quantities in which they are needed. It links (through the link table
@@ -27,6 +38,61 @@ type Activity struct {
 	// Used to link to individual EquipmentItem(s).
 	// Link via foreign key in EquipmentSet.
 	Equipment []EquipmentSet
+}
+
+// GetActivity retrieves an activity from the database by ID, with all foreign
+// keys joined.
+func GetActivity(db *gorm.DB, id uint) (Activity, error) {
+	if id == 0 {
+		return Activity{}, fmt.Errorf("get activity %d: %w", id, ErrInvalidActivityID)
+	}
+
+	a := Activity{Model: &gorm.Model{ID: id}}
+	res := db.Where(&a).
+		Joins("Owner").
+		Preload("Equipment").Preload("Equipment.Item").
+		First(&a)
+
+	if err := res.Error; err != nil {
+		if errors.Is(err, gorm.ErrRecordNotFound) {
+			return Activity{}, fmt.Errorf("get activity %d: %w", id, ErrActivityNotFound)
+		}
+
+		return Activity{}, fmt.Errorf("get activity %d: sql error: %w", id, err)
+	}
+
+	return a, nil
+}
+
+// GetActivities returns all activities stored in the database with all foreign
+// keys joined.
+func GetActivities(db *gorm.DB) ([]Activity, error) {
+	var acts []Activity
+	res := db.Find(&acts).
+		Joins("Owner").
+		Preload("Equipment").Preload("Equipment.Item")
+
+	if res.Error != nil {
+		return nil, fmt.Errorf("get activities: %w", res.Error)
+	}
+
+	return acts, nil
+}
+
+// GetPermanentActivities returns all activities stored in the database which
+// are not marked as temporary with all foreign keys filled.
+func GetPermanentActivities(db *gorm.DB) ([]Activity, error) {
+	var acts []Activity
+	res := db.Find(&acts).
+		Where(&Activity{Temporary: false}).
+		Joins("Owner").
+		Preload("Equipment").Preload("Equipment.Item")
+
+	if res.Error != nil {
+		return nil, fmt.Errorf("get activities: %w", res.Error)
+	}
+
+	return acts, nil
 }
 
 // ItemQuantity returns the number of the given item requisitioned for this

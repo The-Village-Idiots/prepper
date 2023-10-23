@@ -139,6 +139,12 @@ func initRoutes(router *gin.Engine) {
 		r.GET("/locate", handleInventoryLocate)
 	}
 
+	r = router.Group("/book/", session.Authenticator(&Sessions, true))
+	{
+		r.GET("/", handleBook)
+		r.GET("/:activity", handleBookActivity)
+	}
+
 	r = router.Group("/api/")
 	{
 		r.Any("/", handleAPIRoot)
