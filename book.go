@@ -2,6 +2,7 @@ package main
 
 import (
 	"net/http"
+	"strconv"
 
 	"github.com/ejv2/prepper/data"
 	"github.com/gin-gonic/gin"
@@ -15,7 +16,7 @@ func handleBook(c *gin.Context) {
 	s := Sessions.Start(c)
 	defer s.Update()
 
-	dat, err := NewDashboardData(s)
+	ddat, err := NewDashboardData(s)
 	if err != nil {
 		internalError(c, err)
 		return
@@ -27,16 +28,44 @@ func handleBook(c *gin.Context) {
 		return
 	}
 
-	ddat := struct {
+	dat := struct {
 		DashboardData
 		Activities []data.Activity
-	}{dat, act}
+	}{ddat, act}
 
-	c.HTML(http.StatusOK, "book.gohtml", ddat)
+	c.HTML(http.StatusOK, "book.gohtml", dat)
 }
 
 // handleBookActivity is the handler for "/book/[ACTIVITY_ID]"
 //
 // This is the second stage of the form.
 func handleBookActivity(c *gin.Context) {
+	s := Sessions.Start(c)
+	defer s.Update()
+
+	ddat, err := NewDashboardData(s)
+	if err != nil {
+		internalError(c, err)
+		return
+	}
+
+	sid := c.Param("activity")
+	lid, err := strconv.ParseUint(sid, 10, 32)
+	if err != nil {
+		c.String(http.StatusBadRequest, "Bad Activity ID")
+		return
+	}
+	id := uint(lid)
+
+	act, err := data.GetActivity(Database, id)
+	if err != nil {
+		internalError(c, err)
+		return
+	}
+
+	dat := struct {
+		DashboardData
+		Activity data.Activity
+	}{ddat, act}
+	c.HTML(http.StatusOK, "book-activity.gohtml", dat)
 }
