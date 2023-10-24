@@ -40,6 +40,48 @@ type Activity struct {
 	Equipment []EquipmentSet
 }
 
+// Temp returns this activity modified to be suitable for use as a temporary
+// activity.
+func (a Activity) Temp() Activity {
+	act := a
+
+	// Overwrite with generic values
+	act.Title = "Temporary Activity"
+	act.Description = fmt.Sprintf("Temporary activity copied from \"%s\"", a.Title)
+	act.Temporary = true
+
+	// Blank data which we expect to fill in later
+	act.Model = nil
+	act.OwnerID = 0
+	act.Owner = User{}
+
+	// Update equipment set
+	for i := range act.Equipment {
+		act.Equipment[i].Model = nil
+		act.Equipment[i].ActivityID = 0
+	}
+
+	return act
+}
+
+// Clone creates a new temporary activity cloned from this one, which will have
+// a unique ID and an overwritten model for each contained primary key. All
+// foreign keys will also be cloned and marked as temporary. Extras will be
+// appended to the equipment set.
+func (a Activity) Clone(db *gorm.DB, owner uint, extras []EquipmentSet) (Activity, error) {
+	act := a.Temp()
+
+	act.Equipment = append(a.Equipment, extras...)
+	act.OwnerID = owner
+
+	err := db.Create(&act).Error
+	if err != nil {
+		return Activity{}, fmt.Errorf("clone activity: sql error: %w", err)
+	}
+
+	return act, nil
+}
+
 // GetActivity retrieves an activity from the database by ID, with all foreign
 // keys joined.
 func GetActivity(db *gorm.DB, id uint) (Activity, error) {
