@@ -125,8 +125,9 @@ func GetActivities(db *gorm.DB) ([]Activity, error) {
 // are not marked as temporary with all foreign keys filled.
 func GetPermanentActivities(db *gorm.DB) ([]Activity, error) {
 	var acts []Activity
-	res := db.Find(&acts).
-		Where(&Activity{Temporary: false}).
+	res := db.Model(&acts).
+		Where("temporary = ?", false).
+		Find(&acts).
 		Joins("Owner").
 		Preload("Equipment").Preload("Equipment.Item")
 
