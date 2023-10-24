@@ -152,7 +152,7 @@ func (a Activity) ItemQuantity(i EquipmentItem) uint {
 // EquipmentSet is the link table for equipment used in an activity.
 type EquipmentSet struct {
 	*gorm.Model
-	ActivityID uint
+	ActivityID uint `gorm:"constraint:OnUpdate:CASCADE,OnDelete:CASCADE;"`
 
 	// Quantity requisitioned for this activity.
 	Quantity uint
@@ -161,5 +161,5 @@ type EquipmentSet struct {
 	Important bool
 
 	ItemID uint
-	Item   EquipmentItem
+	Item   EquipmentItem `gorm:"constraint:OnUpdate:CASCADE,OnDelete:CASCADE;"`
 }

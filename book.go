@@ -73,6 +73,31 @@ func NewItemInformation(r *http.Request) (ItemInformation, error) {
 	return inf, nil
 }
 
+// Copy copies any contained items into the destination activity, overwriting
+// those already present and adding those which aren't.
+func (i ItemInformation) Copy(dest data.Activity) {
+	used := make(map[int]bool, len(i))
+
+	for _, src := range i {
+		for j, elem := range dest.Equipment {
+			if elem.ItemID == src.ItemID && elem.Important == src.Important {
+				used[j] = true
+				dest.Equipment[j].Quantity = src.Quantity
+			}
+		}
+	}
+
+	for j, src := range i {
+		if !used[j] {
+			dest.Equipment = append(dest.Equipment, data.EquipmentSet{
+				ItemID:    src.ItemID,
+				Quantity:  src.Quantity,
+				Important: src.Important,
+			})
+		}
+	}
+}
+
 // Next returns the URL of the next stage in the wizard based on this
 // information.
 func (i ItemInformation) Next(activity uint) string {
@@ -213,6 +238,12 @@ func handleBookSubmission(c *gin.Context) {
 	s := Sessions.Start(c)
 	defer s.Update()
 
+	ddat, err := NewDashboardData(s)
+	if err != nil {
+		internalError(c, err)
+		return
+	}
+
 	sid := c.Param("activity")
 	lid, err := strconv.ParseUint(sid, 10, 32)
 	if err != nil {
@@ -256,8 +287,36 @@ func handleBookSubmission(c *gin.Context) {
 			return
 		}
 
-		log.Println("doing manually!", date, stime, etime)
-	}
+		// Start/end time is the date + the offset from the day boundary in stime/etime.
+		start := date.Add(time.Hour * time.Duration(stime.Hour())).Add(time.Minute * time.Duration(stime.Minute())).Local()
+		end := date.Add(time.Hour * time.Duration(etime.Hour())).Add(time.Minute * time.Duration(etime.Minute())).Local()
 
-	log.Println(act, set)
+		location, ok := c.GetQuery("location")
+		if !ok {
+			c.String(http.StatusBadRequest, "Missing Location Parameter")
+			return
+		}
+
+		// Copy and clone this activity.
+		// Setting extras to nil, as we already appended them earlier.
+		set.Copy(act)
+		a, err := act.Clone(Database, s.UserID, nil)
+		if err != nil {
+			internalError(c, err)
+			return
+		}
+
+		bk, err := data.NewBooking(Database, a, location, start, end)
+		if err != nil {
+			internalError(c, err)
+			return
+		}
+
+		dat := struct {
+			DashboardData
+			Booking data.Booking
+		}{ddat, bk}
+
+		c.HTML(http.StatusOK, "book-complete.gohtml", dat)
+	}
 }

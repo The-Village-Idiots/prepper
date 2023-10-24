@@ -1,6 +1,8 @@
 package data
 
 import (
+	"errors"
+	"fmt"
 	"time"
 
 	"gorm.io/gorm"
@@ -24,6 +26,17 @@ const (
 	BookingStatusRejected
 )
 
+// Booking creation errors.
+var (
+	// ErrNotTemporary is returned when an attempt is made to create a
+	// booking directly from a permanent activity. They must be cloned
+	// first.
+	ErrNotTemporary = errors.New("activity is not temporary")
+	// ErrSQL is returned when the operation failed due to an external SQL
+	// error.
+	ErrSQL = errors.New("sql error")
+)
+
 // A Booking is an entry in the schedule which has an associated activity
 // (temporary or persistent), teacher account and location specification. The
 // location specification stores a location as given by the timetable or other
@@ -43,4 +56,29 @@ type Booking struct {
 
 	OwnerID uint
 	Owner   User
+}
+
+// NewBooking inserts a new booking from the specified activity into the
+// database. The owner is taken to be the owner of act. If act is not yet a
+// temporary activity, an error is returned. Else, all errors returned will be
+// SQL-related.
+func NewBooking(db *gorm.DB, act Activity, location string, start, end time.Time) (Booking, error) {
+	if !act.Temporary {
+		return Booking{}, fmt.Errorf("book activity %s: %w", act.Title, ErrNotTemporary)
+	}
+
+	bk := Booking{
+		StartTime:  start,
+		EndTime:    end,
+		Location:   location,
+		ActivityID: act.ID,
+		OwnerID:    act.OwnerID,
+	}
+
+	err := db.Create(&bk).Error
+	if err != nil {
+		return bk, fmt.Errorf("book activity %s: %w", act.Title, ErrSQL)
+	}
+
+	return bk, nil
 }
