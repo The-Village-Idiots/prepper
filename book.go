@@ -63,9 +63,24 @@ func handleBookActivity(c *gin.Context) {
 		return
 	}
 
+	items, err := data.GetEquipment(Database)
+	if err != nil {
+		internalError(c, err)
+		return
+	}
+
 	dat := struct {
 		DashboardData
-		Activity data.Activity
-	}{ddat, act}
+		Activity  data.Activity
+		Equipment []data.EquipmentItem
+	}{ddat, act, items}
 	c.HTML(http.StatusOK, "book-activity.gohtml", dat)
+}
+
+// handleBookTimings is the handler for "/book/[ACTIVITY_ID]/timings"
+//
+// This is the third and final stage of the form and contains the form for
+// entering timing and location information. On submission, the booking is
+// created and all required rows are copied.
+func handleBookTimings(c *gin.Context) {
 }
