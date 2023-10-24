@@ -2,6 +2,7 @@ package main
 
 import (
 	"fmt"
+	"log"
 	"net/http"
 	"net/url"
 	"regexp"
@@ -29,7 +30,7 @@ type ItemInformation []data.EquipmentSet
 func NewItemInformation(r *http.Request) (ItemInformation, error) {
 	qs := r.URL.Query()
 
-	inf := make(ItemInformation, len(qs))
+	inf := make(ItemInformation, 0, len(qs))
 	for param := range qs {
 		if matchItems.MatchString(param) || matchExtra.MatchString(param) {
 			segs := strings.Split(param, "_")
@@ -70,6 +71,7 @@ func (i ItemInformation) Next(activity uint) string {
 	url := url.URL{}
 	url.Path = fmt.Sprint("/book/", activity, "/submit")
 
+	q := url.Query()
 	for _, item := range i {
 		base := "qty_"
 		if !item.Important {
@@ -77,9 +79,10 @@ func (i ItemInformation) Next(activity uint) string {
 		}
 
 		key := fmt.Sprint(base, item.Item.ID)
-		url.Query().Add(key, fmt.Sprint(item.Quantity))
+		q.Add(key, fmt.Sprint(item.Quantity))
 	}
 
+	url.RawQuery = q.Encode()
 	return url.String()
 }
 
@@ -184,12 +187,16 @@ func handleBookTimings(c *gin.Context) {
 	set, err := NewItemInformation(c.Request)
 	if err != nil {
 		c.String(http.StatusBadRequest, "Invalid Paramater Format Format: %s", err)
+		return
 	}
+
+	log.Println(set.Next(act.ID))
 
 	dat := struct {
 		DashboardData
 		Activity data.Activity
 		Items    ItemInformation
-	}{ddat, act, set}
+		ISAMS    bool
+	}{ddat, act, set, Config.HasISAMS()}
 	c.HTML(http.StatusOK, "book-timings.gohtml", dat)
 }

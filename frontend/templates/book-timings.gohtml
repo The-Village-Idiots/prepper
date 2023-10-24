@@ -1,0 +1,46 @@
+<!DOCTYPE html>
+
+<html>
+	<head>
+		{{template "head.gohtml" (println "Booking \"" .Activity.Title "\"")}}
+	</head>
+
+	<body>
+		{{template "dashnav.gohtml" .}}
+
+		<div class="container container-fluid mt-3">
+			<h1>Timings for {{.Activity.Title}}</h1>
+			<hr>
+
+			<p>
+				You are creating a booking for <strong>{{.Activity.Title}}</strong>.
+				Please enter the timing and location information for this booking.
+				This page will warn you about any clashes in equipment and allow for you to modify your booking accordingly, if possible.
+			</p>
+			<hr>
+
+			<div class="mt-2">
+				<nav>
+					<div class="nav nav-tabs" id="options-tabs">
+						<button class="nav-link active" id="manual-tab" data-bs-toggle="tab" data-bs-target="#manual" type="button" role="tab">Manually Enter</button>
+						<button class="nav-link" id="automatic-tab" data-bs-toggle="tab" data-bs-target="#automatic" type="button" role="tab" {{if not .ISAMS}}disabled{{end}}>From Timetable</button>
+					</div>
+				</nav>
+
+				<div class="tab-content p-2" id="nav-tabContent">
+					<div class="tab-pane fade show active" id="manual" role="tabpanel" tabindex="0">
+						<form>
+							<p>a</p>
+						</form>
+					</div>
+
+					<div class="tab-pane fade" id="automatic" role="tabpanel" tabindex="0">
+						<form action="{{.Items.Next .Activity.ID}}" method="GET">
+							<p>b</p>
+						</form>
+					</div>
+				</div>
+			</div>
+		</div>
+	</body>
+</html>
