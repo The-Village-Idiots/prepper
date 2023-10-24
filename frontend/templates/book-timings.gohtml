@@ -27,17 +27,51 @@
 					</div>
 				</nav>
 
-				<div class="tab-content p-2" id="nav-tabContent">
+				<div class="tab-content p-4" id="nav-tabContent">
 					<div class="tab-pane fade show active" id="manual" role="tabpanel" tabindex="0">
-						<form>
-							<p>a</p>
+						<form action="/book/{{.Activity.ID}}/submit" method="GET">
+							<!-- Used to select type serverside -->
+							<input type="hidden" name="manual" value="yes">
+
+							<!-- Hidden rows are carry overs from last form -->
+							<div class="d-none">
+								{{range .Items}}
+									{{if .Important}}
+										<input type="hidden" name="qty_{{.Item.ID}}" value="{{.Quantity}}">
+									{{else}}
+										<input type="hidden" name="eqty_{{.Item.ID}}" value="{{.Quantity}}">
+									{{end}}
+								{{end}}
+							</div>
+
+							<div class="row">
+								<div class="col">
+									<label class="form-label" for="date-input">Activity Date:</label>
+									<input class="form-control" type="date" name="date" id="date-input" required>
+								</div>
+							</div>
+
+							<div class="row mb-4">
+								<div class="col">
+									<label class="form-label" for="stime-input">Activity Start Time:</label>
+									<input class="form-control" type="time" name="start_time" id="stime-input" required>
+								</div>
+
+								<div class="col">
+									<label class="form-label" for="etime-input">Activity End Time:</label>
+									<input class="form-control" type="time" name="end_time" id="etime-input" required>
+								</div>
+							</div>
+
+							<div class="row">
+								<div class="col">
+									<button type="submit" class="btn btn-primary form-control">Book</button>
+								</div>
+							</div>
 						</form>
 					</div>
 
 					<div class="tab-pane fade" id="automatic" role="tabpanel" tabindex="0">
-						<form action="{{.Items.Next .Activity.ID}}" method="GET">
-							<p>b</p>
-						</form>
 					</div>
 				</div>
 			</div>

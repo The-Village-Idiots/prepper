@@ -8,6 +8,7 @@ import (
 	"regexp"
 	"strconv"
 	"strings"
+	"time"
 
 	"github.com/ejv2/prepper/data"
 	"github.com/gin-gonic/gin"
@@ -18,6 +19,12 @@ import (
 var (
 	matchItems = regexp.MustCompile("^qty_.*")
 	matchExtra = regexp.MustCompile("^eqty_.*")
+)
+
+// Date and time formats for parsing HTML datetime submissions.
+const (
+	timeFormat = "15:04"
+	dateFormat = "2006-01-02"
 )
 
 // ItemInformation is the set of information submitted for use in the next
@@ -62,6 +69,7 @@ func NewItemInformation(r *http.Request) (ItemInformation, error) {
 		}
 	}
 
+	log.Println(inf)
 	return inf, nil
 }
 
@@ -199,4 +207,57 @@ func handleBookTimings(c *gin.Context) {
 		ISAMS    bool
 	}{ddat, act, set, Config.HasISAMS()}
 	c.HTML(http.StatusOK, "book-timings.gohtml", dat)
+}
+
+func handleBookSubmission(c *gin.Context) {
+	s := Sessions.Start(c)
+	defer s.Update()
+
+	sid := c.Param("activity")
+	lid, err := strconv.ParseUint(sid, 10, 32)
+	if err != nil {
+		c.String(http.StatusBadRequest, "Bad Activity ID")
+		return
+	}
+	id := uint(lid)
+
+	act, err := data.GetActivity(Database, id)
+	if err != nil {
+		internalError(c, err)
+		return
+	}
+
+	set, err := NewItemInformation(c.Request)
+	if err != nil {
+		c.String(http.StatusBadRequest, "Invalid Paramater Format Format: %s", err)
+		return
+	}
+
+	_, manual := c.GetQuery("manual")
+	if manual {
+		sdate := c.Query("date")
+		sstime, setime := c.Query("start_time"), c.Query("end_time")
+
+		date, err := time.Parse(dateFormat, sdate)
+		if err != nil {
+			c.String(http.StatusBadRequest, "Bad Date Format: %s", err.Error())
+			return
+		}
+
+		stime, err := time.Parse(timeFormat, sstime)
+		if err != nil {
+			c.String(http.StatusBadRequest, "Bad Start Time Format: %s", err.Error())
+			return
+		}
+
+		etime, err := time.Parse(timeFormat, setime)
+		if err != nil {
+			c.String(http.StatusBadRequest, "Bad End Time Format: %s", err.Error())
+			return
+		}
+
+		log.Println("doing manually!", date, stime, etime)
+	}
+
+	log.Println(act, set)
 }
