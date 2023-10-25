@@ -287,8 +287,8 @@ func handleBookSubmission(c *gin.Context) {
 
 		// Handle zone offsets as HTML does not supply them
 		_, off := time.Now().Zone()
-		stime = stime.Add(time.Duration(off) * -time.Second).In(time.Local)
-		etime = etime.Add(time.Duration(off) * -time.Second).In(time.Local)
+		stime = stime.Add(time.Duration(off) * -time.Second).In(time.Local).Add(2 * time.Minute)
+		etime = etime.Add(time.Duration(off) * -time.Second).In(time.Local).Add(2 * time.Minute)
 
 		// Start/end time is the date + the offset from the day boundary in stime/etime.
 		start := date.Add(time.Hour * time.Duration(stime.Hour())).Add(time.Minute * time.Duration(stime.Minute()))
