@@ -68,8 +68,8 @@ func NewBooking(db *gorm.DB, act Activity, location string, start, end time.Time
 	}
 
 	bk := Booking{
-		StartTime:  start,
-		EndTime:    end,
+		StartTime:  start.Local(),
+		EndTime:    end.Local(),
 		Location:   location,
 		ActivityID: act.ID,
 		OwnerID:    act.OwnerID,
