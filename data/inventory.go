@@ -95,7 +95,7 @@ func (e *EquipmentItem) Usage(start, end time.Time) (int, error) {
 	tot := 0
 	for _, b := range bk {
 		for _, eq := range b.Activity.Equipment {
-			if e.ID == eq.ID {
+			if e.ID == eq.ItemID {
 				tot += int(eq.Quantity)
 			}
 		}
