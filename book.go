@@ -2,7 +2,6 @@ package main
 
 import (
 	"fmt"
-	"log"
 	"net/http"
 	"net/url"
 	"regexp"
@@ -69,20 +68,20 @@ func NewItemInformation(r *http.Request) (ItemInformation, error) {
 		}
 	}
 
-	log.Println(inf)
 	return inf, nil
 }
 
 // Copy copies any contained items into the destination activity, overwriting
 // those already present and adding those which aren't.
-func (i ItemInformation) Copy(dest data.Activity) {
+func (i ItemInformation) Copy(dest *data.Activity) {
 	used := make(map[int]bool, len(i))
 
-	for _, src := range i {
-		for j, elem := range dest.Equipment {
+	for j, src := range i {
+		for k, elem := range dest.Equipment {
 			if elem.ItemID == src.ItemID && elem.Important == src.Important {
 				used[j] = true
-				dest.Equipment[j].Quantity = src.Quantity
+				dest.Equipment[k].Quantity = src.Quantity
+				break
 			}
 		}
 	}
@@ -90,9 +89,10 @@ func (i ItemInformation) Copy(dest data.Activity) {
 	for j, src := range i {
 		if !used[j] {
 			dest.Equipment = append(dest.Equipment, data.EquipmentSet{
-				ItemID:    src.ItemID,
-				Quantity:  src.Quantity,
-				Important: src.Important,
+				ActivityID: dest.ID,
+				ItemID:     src.ItemID,
+				Quantity:   src.Quantity,
+				Important:  src.Important,
 			})
 		}
 	}
@@ -223,8 +223,6 @@ func handleBookTimings(c *gin.Context) {
 		return
 	}
 
-	log.Println(set.Next(act.ID))
-
 	dat := struct {
 		DashboardData
 		Activity data.Activity
@@ -299,7 +297,7 @@ func handleBookSubmission(c *gin.Context) {
 
 		// Copy and clone this activity.
 		// Setting extras to nil, as we already appended them earlier.
-		set.Copy(act)
+		set.Copy(&act)
 		a, err := act.Clone(Database, s.UserID, nil)
 		if err != nil {
 			internalError(c, err)
