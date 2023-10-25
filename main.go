@@ -74,7 +74,7 @@ func initDatabase(c conf.Config) (err error) {
 		Passwd:               c.Database.Password,
 		Net:                  "tcp",
 		ParseTime:            true,
-		Loc:                  time.Local,
+		Loc:                  time.UTC,
 		AllowNativePasswords: true,
 		RejectReadOnly:       true,
 		Params: map[string]string{

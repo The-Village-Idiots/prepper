@@ -49,7 +49,7 @@ func NewAnnotatedItemTime(i data.EquipmentItem, start, end *time.Time) (an Annot
 		start = &tmp
 	}
 	if end == nil {
-		tmp := time.Now().Truncate(time.Hour).Add(time.Hour)
+		tmp := time.Now().Truncate(time.Minute).Add(time.Minute)
 		end = &tmp
 	}
 
