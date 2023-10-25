@@ -121,6 +121,12 @@ func (e *EquipmentItem) NetQuantity(start, end time.Time) (int, error) {
 	return int(e.Quantity) - u, err
 }
 
+// VisualID is very useless in Go but very useful in Go templates where math is
+// strictly disallowed!
+func (e *EquipmentItem) VisualID() uint {
+	return e.ID + 1
+}
+
 // UseDB updates the internal database to a new instance. This shouldn't really
 // be used unless really needed.
 func (e *EquipmentItem) UseDB(db *gorm.DB) {

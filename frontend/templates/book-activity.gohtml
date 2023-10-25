@@ -92,7 +92,7 @@
 					<tbody>
 						{{range $i, $item := .Activity.Equipment}}
 							<tr>
-								<td>{{$i}}</td>
+								<td>{{$item.VisualIndex $i}}</td>
 								<td>{{$item.Item.Name}}</td>
 								<td>
 									<input class="form-control" name="qty_{{$item.Item.ID}}" value="{{$item.Quantity}}" type="number" min="1" max="{{$item.Item.Quantity}}">

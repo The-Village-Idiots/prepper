@@ -164,3 +164,9 @@ type EquipmentSet struct {
 	ItemID uint
 	Item   EquipmentItem `gorm:"constraint:OnUpdate:CASCADE,OnDelete:CASCADE;"`
 }
+
+// VisualIndex is very useless in Go, but very useful in Go templates where
+// math is not allowed!
+func (e EquipmentSet) VisualIndex(i int) int {
+	return i + 1
+}
