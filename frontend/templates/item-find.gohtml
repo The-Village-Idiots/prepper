@@ -52,8 +52,8 @@
 									<td><u><strong>{{.Location}}</strong></u></td>
 									<td>{{.Activity.Title}}</td>
 									<td>{{.Owner.DisplayName}} ({{.Owner.Username}})</td>
-									<td>{{.StartTime}}</td>
-									<td>{{.EndTime}}</td>
+									<td>{{.StartTime.Local}}</td>
+									<td>{{.EndTime.Local}}</td>
 									<td>{{.Activity.ItemQuantity $item}}</td>
 								</tr>
 							{{end}}
@@ -86,8 +86,8 @@
 									<td><u><strong>{{.Location}}</strong></u></td>
 									<td>{{.Activity.Title}}</td>
 									<td>{{.Owner.DisplayName}} ({{.Owner.Username}})</td>
-									<td>{{.StartTime}}</td>
-									<td>{{.EndTime}}</td>
+									<td>{{.StartTime.Local}}</td>
+									<td>{{.EndTime.Local}}</td>
 									<td>{{.Activity.ItemQuantity $item}}</td>
 								</tr>
 							{{end}}
