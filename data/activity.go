@@ -46,7 +46,6 @@ func (a Activity) Temp() Activity {
 	act := a
 
 	// Overwrite with generic values
-	act.Title = "Temporary Activity"
 	act.Description = fmt.Sprintf("Temporary activity copied from \"%s\"", a.Title)
 	act.Temporary = true
 
