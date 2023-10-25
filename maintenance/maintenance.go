@@ -14,6 +14,11 @@ type Manager struct {
 	entered time.Time
 }
 
+// NewManager returns a new blank manager with a valid but unlocked mutex.
+func NewManager() Manager {
+	return Manager{RWMutex: new(sync.RWMutex)}
+}
+
 // Is returns if the site is currently in maintenance mode.
 func (m Manager) Is() bool {
 	m.RLock()

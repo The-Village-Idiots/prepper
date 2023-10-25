@@ -20,6 +20,7 @@ import (
 	"github.com/ejv2/prepper/conf"
 	"github.com/ejv2/prepper/data"
 	"github.com/ejv2/prepper/isams"
+	"github.com/ejv2/prepper/maintenance"
 	"github.com/ejv2/prepper/session"
 
 	"github.com/gin-gonic/gin"
@@ -39,10 +40,11 @@ const (
 )
 
 var (
-	Config   conf.Config
-	Database *gorm.DB
-	Sessions session.Store
-	ISAMS    *isams.ISAMS
+	Config      conf.Config
+	Database    *gorm.DB
+	Sessions    session.Store
+	ISAMS       *isams.ISAMS
+	Maintenance maintenance.Manager
 )
 
 func loadConfig() error {
@@ -169,6 +171,9 @@ func main() {
 	if err := loadConfig(); err != nil {
 		log.Fatalln(err)
 	}
+
+	// Init maintenance manager
+	Maintenance = maintenance.NewManager()
 
 	// ISAMS Support
 	if Config.HasISAMS() {
