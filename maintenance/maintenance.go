@@ -2,6 +2,7 @@ package maintenance
 
 import (
 	"errors"
+	"log"
 	"sync"
 	"time"
 )
@@ -12,11 +13,14 @@ type Manager struct {
 	*sync.RWMutex
 	is      bool
 	entered time.Time
+
+	// Read only after init
+	log bool
 }
 
 // NewManager returns a new blank manager with a valid but unlocked mutex.
-func NewManager() Manager {
-	return Manager{RWMutex: new(sync.RWMutex)}
+func NewManager(log bool) Manager {
+	return Manager{RWMutex: new(sync.RWMutex), log: log}
 }
 
 // Is returns if the site is currently in maintenance mode.
@@ -42,6 +46,10 @@ func (m Manager) Enter() error {
 		return errors.New("already in maintenance mode")
 	}
 
+	if m.log {
+		log.Println("[MAINTENANCE] Entering maintenance mode")
+	}
+
 	m.is = true
 	m.entered = time.Now()
 	return nil
@@ -55,6 +63,10 @@ func (m Manager) Exit() {
 
 	if !m.is {
 		panic("request exited maintenance mode when not entered")
+	}
+
+	if m.log {
+		log.Println("[MAINTENANCE] Exiting maintenance mode")
 	}
 
 	m.is = false

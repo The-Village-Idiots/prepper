@@ -39,6 +39,7 @@ const (
 	PathConfig    = "config.json"
 )
 
+// Lifetime application state.
 var (
 	Config      conf.Config
 	Database    *gorm.DB
@@ -173,7 +174,7 @@ func main() {
 	}
 
 	// Init maintenance manager
-	Maintenance = maintenance.NewManager()
+	Maintenance = maintenance.NewManager(true)
 
 	// ISAMS Support
 	if Config.HasISAMS() {
