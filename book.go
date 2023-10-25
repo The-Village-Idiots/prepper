@@ -1,6 +1,7 @@
 package main
 
 import (
+	"errors"
 	"fmt"
 	"net/http"
 	"net/url"
@@ -236,12 +237,6 @@ func handleBookSubmission(c *gin.Context) {
 	s := Sessions.Start(c)
 	defer s.Update()
 
-	ddat, err := NewDashboardData(s)
-	if err != nil {
-		internalError(c, err)
-		return
-	}
-
 	sid := c.Param("activity")
 	lid, err := strconv.ParseUint(sid, 10, 32)
 	if err != nil {
@@ -315,11 +310,44 @@ func handleBookSubmission(c *gin.Context) {
 			return
 		}
 
-		dat := struct {
-			DashboardData
-			Booking data.Booking
-		}{ddat, bk}
-
-		c.HTML(http.StatusOK, "book-complete.gohtml", dat)
+		c.Redirect(http.StatusFound, fmt.Sprint("/book/success/", bk.ID))
 	}
+}
+
+// handleBookSuccess is the handler for "/book/success/[BOOKING_ID]"
+func handleBookSuccess(c *gin.Context) {
+	s := Sessions.Start(c)
+	defer s.Update()
+
+	ddat, err := NewDashboardData(s)
+	if err != nil {
+		internalError(c, err)
+		return
+	}
+
+	sid := c.Param("id")
+	lid, err := strconv.ParseUint(sid, 10, 32)
+	if err != nil {
+		c.String(http.StatusBadRequest, "Bad Booking ID")
+		return
+	}
+	id := uint(lid)
+
+	bk, err := data.GetBooking(Database, id)
+	if err != nil {
+		if errors.Is(err, data.ErrNoSuchBooking) {
+			c.String(http.StatusNotFound, "Booking Not Found")
+			return
+		}
+
+		internalError(c, err)
+		return
+	}
+
+	dat := struct {
+		DashboardData
+		Booking data.Booking
+	}{ddat, bk}
+
+	c.HTML(http.StatusOK, "book-complete.gohtml", dat)
 }

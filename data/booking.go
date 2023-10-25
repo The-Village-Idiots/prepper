@@ -26,7 +26,7 @@ const (
 	BookingStatusRejected
 )
 
-// Booking creation errors.
+// Booking creation/retrieval errors.
 var (
 	// ErrNotTemporary is returned when an attempt is made to create a
 	// booking directly from a permanent activity. They must be cloned
@@ -35,6 +35,11 @@ var (
 	// ErrSQL is returned when the operation failed due to an external SQL
 	// error.
 	ErrSQL = errors.New("sql error")
+
+	// Booking ID is out of range.
+	ErrInvalidBookingID = errors.New("invalid booking ID")
+	// No booking found with the given ID.
+	ErrNoSuchBooking = errors.New("booking does not exist")
 )
 
 // A Booking is an entry in the schedule which has an associated activity
@@ -81,4 +86,26 @@ func NewBooking(db *gorm.DB, act Activity, location string, start, end time.Time
 	}
 
 	return bk, nil
+}
+
+// GetBooking looks up a booking by ID. If the ID is invalid or out of range,
+// no such booking exists or an SQL failure is encountered, an error is
+// returned.
+func GetBooking(db *gorm.DB, id uint) (Booking, error) {
+	if id == 0 {
+		return Booking{}, fmt.Errorf("get booking %d: %w", id, ErrInvalidBookingID)
+	}
+
+	u := Booking{Model: &gorm.Model{ID: id}}
+	err := db.Where(&u).Joins("Activity").First(&u).Error
+
+	if err != nil {
+		if errors.Is(err, gorm.ErrRecordNotFound) {
+			return Booking{}, fmt.Errorf("get booking %d: %w", id, ErrNoSuchBooking)
+		}
+
+		return Booking{}, fmt.Errorf("get booking %d: sql error: %w", id, err)
+	}
+
+	return u, nil
 }
