@@ -11,6 +11,7 @@ import (
 	"time"
 
 	"github.com/ejv2/prepper/data"
+	"github.com/ejv2/prepper/isams"
 	"github.com/gin-gonic/gin"
 	"gorm.io/gorm"
 )
@@ -224,12 +225,31 @@ func handleBookTimings(c *gin.Context) {
 		return
 	}
 
+	var tbl *isams.UserTimetable
+	var tbla [][]struct{}
+	if Config.HasISAMS() && ddat.User.IsamsID != nil {
+		iu, err := ISAMS.FindUser(*ddat.User.IsamsID)
+		if err != nil {
+			internalError(c, err)
+			return
+		}
+
+		tbl = iu.Timetable(ISAMS)
+
+		tbla = make([][]struct{}, 0, len(*tbl))
+		for _, t := range *tbl {
+			tbla = append(tbla, make([]struct{}, t.MaxN()))
+		}
+	}
+
 	dat := struct {
 		DashboardData
-		Activity data.Activity
-		Items    ItemInformation
-		ISAMS    bool
-	}{ddat, act, set, Config.HasISAMS()}
+		Activity      data.Activity
+		Items         ItemInformation
+		ISAMS         bool
+		Timetable     *isams.UserTimetable
+		TimetableLoop [][]struct{}
+	}{ddat, act, set, Config.HasISAMS(), tbl, tbla}
 	c.HTML(http.StatusOK, "book-timings.gohtml", dat)
 }
 

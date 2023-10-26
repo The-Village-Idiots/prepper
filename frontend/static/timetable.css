@@ -1,0 +1,12 @@
+/* Part of Prepper
+ * Copyright (C) 2023 - Ethan Marshall
+ *
+ * Timetable styling utilities
+ */
+
+.fake-link {
+}
+
+.fake-link:hover {
+	text-decoration: underline;
+}

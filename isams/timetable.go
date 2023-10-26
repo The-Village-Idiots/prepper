@@ -24,6 +24,49 @@ type StructuredWeek struct {
 	Days []StructuredDay
 }
 
+// MaxN finds the maximum value for N which could yield a useful timetable value.
+func (w StructuredWeek) MaxN() int {
+	ma := 0
+
+	for _, d := range w.Days {
+		if len(d.Periods) > ma {
+			ma = len(d.Periods)
+		}
+	}
+
+	return ma
+}
+
+// Nth returns an array of the nth items in the current row. This is used for
+// timetable formatting.
+//
+// NOTE: This does not take into account the timings of items or free periods;
+// this is TODO.
+func (w StructuredWeek) Nth(n int) []StructuredTimetable {
+	arr := make([]StructuredTimetable, 0, len(w.Days)*5)
+
+	for _, d := range w.Days {
+		if n < len(d.Periods) {
+			arr = append(arr, d.Periods[n])
+		} else {
+			arr = append(arr, StructuredTimetable{})
+		}
+	}
+
+	return arr
+}
+
+// Empty returns true if no periods are recorded for this user in this week.
+func (w StructuredWeek) Empty() bool {
+	for _, d := range w.Days {
+		if len(d.Periods) > 0 {
+			return false
+		}
+	}
+
+	return true
+}
+
 // StructuredDay is an array of periods in a day, suitable for sorting using
 // sort.Interface.
 type StructuredDay struct {

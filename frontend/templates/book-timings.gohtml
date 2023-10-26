@@ -3,6 +3,8 @@
 <html>
 	<head>
 		{{template "head.gohtml" (println "Booking \"" .Activity.Title "\"")}}
+
+		<link rel="stylesheet" href="/assets/timetable.css">
 	</head>
 
 	<body>
@@ -23,7 +25,7 @@
 				<nav>
 					<div class="nav nav-tabs" id="options-tabs">
 						<button class="nav-link active" id="manual-tab" data-bs-toggle="tab" data-bs-target="#manual" type="button" role="tab">Manually Enter</button>
-						<button class="nav-link" id="automatic-tab" data-bs-toggle="tab" data-bs-target="#automatic" type="button" role="tab" {{if not .ISAMS}}disabled{{end}}>From Timetable</button>
+						<button class="nav-link" id="automatic-tab" data-bs-toggle="tab" data-bs-target="#automatic" type="button" role="tab" {{if or (not .ISAMS) (not .Timetable)}}disabled{{end}}>From Timetable</button>
 					</div>
 				</nav>
 
@@ -79,6 +81,65 @@
 					</div>
 
 					<div class="tab-pane fade" id="automatic" role="tabpanel" tabindex="0">
+						{{$tl := .TimetableLoop}}
+						{{if .Timetable}}
+							<div class="container">
+								<p>
+									Date and time information will be automatically filled from your timetable information.
+									Please enter the first date of the week (beginning on Monday) in which this activity will take place.
+								</p>
+
+								<div class="row">
+									<label class="form-label" for="week_commencing">Week Commencing:</label>
+									<input class="form-control" type="date" id="week_commencing" value="{{.Time.Format "2006-01-02"}}">
+								</div>
+
+								<hr>
+
+								<ul class="nav nav-tabs" role="tablist">
+									{{range $i, $t := .Timetable}}
+										{{if not $t.Empty}}
+											<li class="nav-item" role="presentation">
+												<button class="nav-link {{if eq 0 $i}}active{{end}}" id="{{$t.Name}}-tab" data-bs-toggle="tab" data-bs-target="#{{$t.Name}}-tab-pane" type="button" role="tab">{{$t.Name}}</button>
+											</li>
+										{{end}}
+									{{end}}
+								</ul>
+								<div class="tab-content">
+									{{range $i, $t := .Timetable}}
+										{{if not $t.Empty}}
+											<div class="tab-pane fade show {{if eq 0 $i}}active{{end}}" id="{{$t.Name}}-tab-pane" role="tabpanel" tabindex="0">
+												<div class="container container-fluid">
+													<div class="row p-4 bg-light border-bottom">
+														{{range .Days}}
+															<div class="col col-expand-auto">
+																<strong>{{.Name}}</strong>
+															</div>
+														{{end}}
+													</div>
+
+													{{range $j, $lp := (index $tl $i)}}
+														<div class="row">
+															{{range $t.Nth $j}}
+																<form class="col p-4 col-expand-auto border text-center">
+																	<button type="submit" class="btn text-primary fake-link">
+																			{{if .PeriodCode}}
+																				{{.PeriodCode}}
+																				<br>
+																				{{.StartTime.Format "15:04"}} - {{.EndTime.Format "15:04"}}
+																			{{end}}
+																	</button>
+																</form>
+															{{end}}
+														</div>
+													{{end}}
+												</div>
+											</div>
+										{{end}}
+									{{end}}
+								</div>
+							</div>
+						{{end}}
 					</div>
 				</div>
 			</div>
