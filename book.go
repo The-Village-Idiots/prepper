@@ -242,14 +242,28 @@ func handleBookTimings(c *gin.Context) {
 		}
 	}
 
+	// Week commencing
+	wc := time.Now()
+	// Day of week starts in American style at 0=Sunday
+	// We want to start on Monday, so subtract one from the time.
+	dow := wc.Weekday()
+	if dow == 0 {
+		dow = 6
+	} else {
+		dow--
+	}
+	// Subtract the number of days equal to the day of the week.
+	wc = wc.Add((-24 * time.Hour) * time.Duration(dow))
+
 	dat := struct {
 		DashboardData
-		Activity      data.Activity
-		Items         ItemInformation
-		ISAMS         bool
-		Timetable     *isams.UserTimetable
-		TimetableLoop [][]struct{}
-	}{ddat, act, set, Config.HasISAMS(), tbl, tbla}
+		Activity       data.Activity
+		Items          ItemInformation
+		ISAMS          bool
+		Timetable      *isams.UserTimetable
+		TimetableLoop  [][]struct{}
+		WeekCommencing time.Time
+	}{ddat, act, set, Config.HasISAMS(), tbl, tbla, wc}
 	c.HTML(http.StatusOK, "book-timings.gohtml", dat)
 }
 

@@ -5,9 +5,10 @@
 		{{template "head.gohtml" (println "Booking \"" .Activity.Title "\"")}}
 
 		<link rel="stylesheet" href="/assets/timetable.css">
+		<script src="/assets/scripts/booktime.js"></script>
 	</head>
 
-	<body>
+	<body onload="update_commencing()">
 		{{template "dashnav.gohtml" .}}
 
 		<div class="container container-fluid mt-3">
@@ -91,7 +92,7 @@
 
 								<div class="row">
 									<label class="form-label" for="week_commencing">Week Commencing:</label>
-									<input class="form-control" type="date" id="week_commencing" value="{{.Time.Format "2006-01-02"}}">
+									<input class="form-control" type="date" id="week_commencing" value="{{.WeekCommencing.Format "2006-01-02"}}" onchange="update_commencing()">
 								</div>
 
 								<hr>
@@ -122,11 +123,14 @@
 														<div class="row">
 															{{range $t.Nth $j}}
 																<form class="col p-4 col-expand-auto border text-center">
+																	<input class="week_commencing_input" type="hidden">
+
 																	<button type="submit" class="btn text-primary fake-link">
 																			{{if .PeriodCode}}
 																				{{.PeriodCode}}
 																				<br>
 																				{{.StartTime.Format "15:04"}} - {{.EndTime.Format "15:04"}}
+																				{{if .Room}}{{.Room.Name}}{{end}}
 																			{{end}}
 																	</button>
 																</form>
