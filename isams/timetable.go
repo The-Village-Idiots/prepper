@@ -96,6 +96,7 @@ type StructuredTimetable struct {
 
 	StartTime time.Time
 	EndTime   time.Time
+	Day       time.Weekday
 
 	Room *Classroom
 }

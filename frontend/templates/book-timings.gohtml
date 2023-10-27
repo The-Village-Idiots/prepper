@@ -83,6 +83,8 @@
 
 					<div class="tab-pane fade" id="automatic" role="tabpanel" tabindex="0">
 						{{$tl := .TimetableLoop}}
+						{{$it := .Items}}
+						{{$id := .Activity.ID}}
 						{{if .Timetable}}
 							<div class="container">
 								<p>
@@ -122,8 +124,24 @@
 													{{range $j, $lp := (index $tl $i)}}
 														<div class="row">
 															{{range $t.Nth $j}}
-																<form class="col p-4 col-expand-auto border text-center">
-																	<input class="week_commencing_input" type="hidden">
+																<form action="/book/{{$id}}/submit" method="GET" class="col p-4 col-expand-auto border text-center">
+																	<!-- Filled by JavaScript -->
+																	<input class="week_commencing_input" name="week_commencing" type="hidden">
+
+																	<!-- Filled for static submission -->
+																	<input type="hidden" name="location" value="{{if .Room}}{{.Room.Name}}{{end}}">
+																	<input type="hidden" name="start_time" value="{{.StartTime.Format "15:04"}}">
+																	<input type="hidden" name="end_time" value="{{.EndTime.Format "15:04"}}">
+																	<input type="hidden" name="day" value="{{.Day}}">
+
+																	<!-- Carry over from previous form -->
+																	{{range $it}}
+																		{{if .Important}}
+																			<input type="hidden" name="qty_{{.Item.ID}}" value="{{.Quantity}}">
+																		{{else}}
+																			<input type="hidden" name="eqty_{{.Item.ID}}" value="{{.Quantity}}">
+																		{{end}}
+																	{{end}}
 
 																	<button type="submit" class="btn text-primary fake-link">
 																			{{if .PeriodCode}}

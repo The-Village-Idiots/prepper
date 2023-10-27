@@ -124,6 +124,7 @@ func (u *User) compileTimetable(i *ISAMS) {
 							StructuredTimetable{
 								StartTime: time.Time(p.StartTime),
 								EndTime:   time.Time(p.EndTime),
+								Day:       time.Weekday(d.Ordinal),
 
 								Room:       r,
 								PeriodCode: s.Code,

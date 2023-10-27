@@ -81,6 +81,17 @@ func (a Activity) Clone(db *gorm.DB, owner uint, extras []EquipmentSet) (Activit
 	return act, nil
 }
 
+// TotalQuantity returns the total quantity of items requisitioned for this
+// activity by summing that of the individual equipment sets.
+func (a Activity) TotalQuantity() uint {
+	tot := uint(0)
+	for _, s := range a.Equipment {
+		tot += s.Quantity
+	}
+
+	return tot
+}
+
 // GetActivity retrieves an activity from the database by ID, with all foreign
 // keys joined.
 func GetActivity(db *gorm.DB, id uint) (Activity, error) {

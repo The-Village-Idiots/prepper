@@ -97,7 +97,10 @@ func GetBooking(db *gorm.DB, id uint) (Booking, error) {
 	}
 
 	u := Booking{Model: &gorm.Model{ID: id}}
-	err := db.Where(&u).Joins("Activity").First(&u).Error
+	err := db.Where(&u).Joins("Activity").
+		Preload("Activity.Equipment").
+		Preload("Activity.Equipment.Item").
+		First(&u).Error
 
 	if err != nil {
 		if errors.Is(err, gorm.ErrRecordNotFound) {

@@ -3,6 +3,7 @@ package main
 import (
 	"errors"
 	"fmt"
+	"log"
 	"net/http"
 	"net/url"
 	"regexp"
@@ -119,6 +120,47 @@ func (i ItemInformation) Next(activity uint) string {
 
 	url.RawQuery = q.Encode()
 	return url.String()
+}
+
+func parseDay(day string) int {
+	switch strings.ToLower(day) {
+	case "monday":
+		return 0
+	case "tuesday":
+		return 1
+	case "wednesday":
+		return 2
+	case "thursday":
+		return 3
+	case "friday":
+		return 4
+	case "saturday":
+		return 5
+	case "sunday":
+		return 6
+	}
+
+	// Assume monday if unknown
+	return 0
+}
+
+// weekCommencing returns the first day of the week which contains the given
+// time.
+func weekCommencing(target time.Time) time.Time {
+	// Week commencing
+	wc := target
+	// Day of week starts in American style at 0=Sunday
+	// We want to start on Monday, so subtract one from the time.
+	dow := wc.Weekday()
+	if dow == 0 {
+		dow = 6
+	} else {
+		dow--
+	}
+	// Subtract the number of days equal to the day of the week.
+	wc = wc.Add((-24 * time.Hour) * time.Duration(dow))
+
+	return wc
 }
 
 // handleBook is the handler for "/book/"
@@ -242,18 +284,7 @@ func handleBookTimings(c *gin.Context) {
 		}
 	}
 
-	// Week commencing
-	wc := time.Now()
-	// Day of week starts in American style at 0=Sunday
-	// We want to start on Monday, so subtract one from the time.
-	dow := wc.Weekday()
-	if dow == 0 {
-		dow = 6
-	} else {
-		dow--
-	}
-	// Subtract the number of days equal to the day of the week.
-	wc = wc.Add((-24 * time.Hour) * time.Duration(dow))
+	wc := weekCommencing(time.Now())
 
 	dat := struct {
 		DashboardData
@@ -291,64 +322,71 @@ func handleBookSubmission(c *gin.Context) {
 		return
 	}
 
+	var date time.Time
 	_, manual := c.GetQuery("manual")
 	if manual {
 		sdate := c.Query("date")
-		sstime, setime := c.Query("start_time"), c.Query("end_time")
-
-		date, err := time.Parse(dateFormat, sdate)
+		date, err = time.Parse(dateFormat, sdate)
 		if err != nil {
 			c.String(http.StatusBadRequest, "Bad Date Format: %s", err.Error())
 			return
 		}
+	} else {
+		wcp := c.Query("week_commencing")
+		wday := parseDay(wcp)
 
-		stime, err := time.Parse(timeFormat, sstime)
-		if err != nil {
-			c.String(http.StatusBadRequest, "Bad Start Time Format: %s", err.Error())
-			return
-		}
-
-		etime, err := time.Parse(timeFormat, setime)
-		if err != nil {
-			c.String(http.StatusBadRequest, "Bad End Time Format: %s", err.Error())
-			return
-		}
-
-		// Handle zone offsets as HTML does not supply them
-		_, off := time.Now().Zone()
-		stime = stime.Add(time.Duration(off) * -time.Second).In(time.Local).Add(2 * time.Minute)
-		etime = etime.Add(time.Duration(off) * -time.Second).In(time.Local).Add(2 * time.Minute)
-
-		// Start/end time is the date + the offset from the day boundary in stime/etime.
-		start := date.Add(time.Hour * time.Duration(stime.Hour())).Add(time.Minute * time.Duration(stime.Minute()))
-		end := date.Add(time.Hour * time.Duration(etime.Hour())).Add(time.Minute * time.Duration(etime.Minute()))
-
-		location, ok := c.GetQuery("location")
-		if !ok {
-			c.String(http.StatusBadRequest, "Missing Location Parameter")
-			return
-		}
-
-		// Copy and clone this activity.
-		// Setting extras to nil, as we already appended them earlier.
-		set.Copy(&act)
-		a, err := act.Clone(Database, s.UserID, nil)
-		if err != nil {
-			internalError(c, err)
-			return
-		}
-
-		bk, err := data.NewBooking(Database, a, location, start, end)
-		if err != nil {
-			internalError(c, err)
-			return
-		}
-
-		c.Redirect(http.StatusFound, fmt.Sprint("/book/success/", bk.ID))
+		date = weekCommencing(time.Now()).Truncate(24 * time.Hour).Add((24 * time.Hour) * time.Duration(wday))
 	}
+
+	sstime, setime := c.Query("start_time"), c.Query("end_time")
+	log.Println(sstime, setime)
+
+	stime, err := time.Parse(timeFormat, sstime)
+	if err != nil {
+		c.String(http.StatusBadRequest, "Bad Start Time Format: %s", err.Error())
+		return
+	}
+
+	etime, err := time.Parse(timeFormat, setime)
+	if err != nil {
+		c.String(http.StatusBadRequest, "Bad End Time Format: %s", err.Error())
+		return
+	}
+
+	// Handle zone offsets as HTML does not supply them
+	_, off := time.Now().Zone()
+	stime = stime.Add(time.Duration(off) * -time.Second).In(time.Local).Add(2 * time.Minute)
+	etime = etime.Add(time.Duration(off) * -time.Second).In(time.Local).Add(2 * time.Minute)
+
+	// Start/end time is the date + the offset from the day boundary in stime/etime.
+	start := date.Add(time.Hour * time.Duration(stime.Hour())).Add(time.Minute * time.Duration(stime.Minute()))
+	end := date.Add(time.Hour * time.Duration(etime.Hour())).Add(time.Minute * time.Duration(etime.Minute()))
+
+	location, ok := c.GetQuery("location")
+	if !ok {
+		c.String(http.StatusBadRequest, "Missing Location Parameter")
+		return
+	}
+
+	// Copy and clone this activity.
+	// Setting extras to nil, as we already appended them earlier.
+	set.Copy(&act)
+	a, err := act.Clone(Database, s.UserID, nil)
+	if err != nil {
+		internalError(c, err)
+		return
+	}
+
+	bk, err := data.NewBooking(Database, a, location, start, end)
+	if err != nil {
+		internalError(c, err)
+		return
+	}
+
+	c.Redirect(http.StatusFound, fmt.Sprint("/book/success/", bk.ID))
 }
 
-// handleBookSuccess is the handler for "/book/success/[BOOKING_ID]"
+// handleBookSuccess is the handler for "/book/success/[BOOKING_ID]".
 func handleBookSuccess(c *gin.Context) {
 	s := Sessions.Start(c)
 	defer s.Update()
