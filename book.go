@@ -333,9 +333,14 @@ func handleBookSubmission(c *gin.Context) {
 		}
 	} else {
 		wcp := c.Query("week_commencing")
-		wday := parseDay(wcp)
+		wstart, err := time.Parse(dateFormat, wcp)
+		if err != nil {
+			c.String(http.StatusBadRequest, "Bad Date Format: %s", err.Error())
+			return
+		}
+		wday := parseDay(c.Query("day"))
 
-		date = weekCommencing(time.Now()).Truncate(24 * time.Hour).Add((24 * time.Hour) * time.Duration(wday))
+		date = weekCommencing(wstart).Truncate(24 * time.Hour).Add((24 * time.Hour) * time.Duration(wday))
 	}
 
 	sstime, setime := c.Query("start_time"), c.Query("end_time")
