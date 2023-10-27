@@ -28,7 +28,7 @@
 
 				<form action="/inventory/locate">
 					<label for="item">Item:</label>
-					<input name="item" id="item" list="items">
+					<input name="item" id="item" list="items" autocomplete="off">
 					<datalist id="items">
 						{{range .Inventory}}
 							<option value="{{.ID}}">{{.Name}}</option>
