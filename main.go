@@ -238,6 +238,7 @@ func main() {
 		WriteTimeout:      5 * time.Second,
 	}
 	router.Use(gin.LoggerWithWriter(Dmesg.LogOutput()), gin.Recovery())
+	gin.ForceConsoleColor()
 
 	if err := router.SetTrustedProxies(Config.TrustedProxies); err != nil {
 		log.Fatal("invalid proxy entries: ", err)
