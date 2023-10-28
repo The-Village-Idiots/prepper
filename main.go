@@ -20,6 +20,7 @@ import (
 	"github.com/ejv2/prepper/conf"
 	"github.com/ejv2/prepper/data"
 	"github.com/ejv2/prepper/isams"
+	"github.com/ejv2/prepper/logging"
 	"github.com/ejv2/prepper/maintenance"
 	"github.com/ejv2/prepper/session"
 
@@ -46,6 +47,7 @@ var (
 	Sessions    session.Store
 	ISAMS       *isams.ISAMS
 	Maintenance maintenance.Manager
+	Dmesg       *logging.Dmesg
 )
 
 func loadConfig() error {
@@ -167,6 +169,10 @@ func initRoutes(router *gin.Engine) {
 }
 
 func main() {
+	// Init early logging
+	Dmesg = logging.NewDmesg()
+	log.SetOutput(Dmesg.LogOutput())
+
 	// Banner
 	log.Print("Starting Prepper ", VersionString(), "...")
 
@@ -225,7 +231,7 @@ func main() {
 		ReadTimeout:       15 * time.Second,
 		WriteTimeout:      5 * time.Second,
 	}
-	router.Use(gin.Logger(), gin.Recovery())
+	router.Use(gin.LoggerWithWriter(Dmesg.LogOutput()), gin.Recovery())
 
 	if err := router.SetTrustedProxies(Config.TrustedProxies); err != nil {
 		log.Fatal("invalid proxy entries: ", err)
