@@ -6,9 +6,11 @@ import (
 	"time"
 )
 
-// fakeUtcZone is the fake time zone for use if one is absent.
 const (
+	// fakeUtcZone is the fake time zone for use if one is absent.
 	fakeUtcZone = "+00:00"
+	// fakeKitchen is a fake time format which suits that used by iSAMS
+	// timetable records.
 	fakeKitchen = "15:04"
 )
 
