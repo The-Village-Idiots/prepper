@@ -89,6 +89,7 @@ func handleLoginAttempt(c *gin.Context) {
 	s.SignIn(us.ID)
 	s.Update()
 
+	log.Println("New session begins for", c.RemoteIP(), "on account", us.Username)
 	c.Redirect(http.StatusFound, "/dashboard/")
 }
 
@@ -101,5 +102,6 @@ func handleLogout(c *gin.Context) {
 	s.Logout()
 	s.Update()
 
+	log.Println("Session ending for", c.RemoteIP())
 	c.Redirect(http.StatusFound, "/login?out")
 }
