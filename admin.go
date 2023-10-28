@@ -1,6 +1,7 @@
 package main
 
 import (
+	"errors"
 	"io"
 	"net/http"
 
@@ -33,4 +34,8 @@ func handleAdminLogs(c *gin.Context) {
 
 	buf = logging.StripColors(buf)
 	c.Writer.Write(buf)
+}
+
+func handleAdminError(c *gin.Context) {
+	internalError(c, errors.New("Admin-Triggered Fatal Error"))
 }

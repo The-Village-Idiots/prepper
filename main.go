@@ -171,6 +171,7 @@ func initRoutes(router *gin.Engine) {
 	{
 		r.Any("/", handleAdminRoot)
 		r.GET("/logs", handleAdminLogs)
+		r.GET("/error", handleAdminError)
 	}
 }
 
