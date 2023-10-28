@@ -166,6 +166,12 @@ func initRoutes(router *gin.Engine) {
 			r.POST("/:id/edit", handleAPIEditItem)
 		}
 	}
+
+	r = router.Group("/admin/", session.Permissions(&Sessions, Database, data.CapLogging, false))
+	{
+		r.Any("/", handleAdminRoot)
+		r.GET("/logs", handleAdminLogs)
+	}
 }
 
 func main() {

@@ -24,4 +24,7 @@ const (
 
 	// Technicians may manage the inventory database.
 	CapManageInventory = UserTechnician
+
+	// View server logs.
+	CapLogging = UserAdmin
 )
