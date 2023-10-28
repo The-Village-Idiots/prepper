@@ -10,11 +10,18 @@ import (
 
 // handleAdminRoot is the handler for "/admin/".
 //
-// This is mainly used to check admin permissions and is not particularly
-// useful. This route always returns 200 OK for authenticated users but with no
-// response.
+// Displays a simple UI for selecting the admin function desired.
 func handleAdminRoot(c *gin.Context) {
-	c.String(http.StatusOK, "Hello!")
+	s := Sessions.Start(c)
+	defer s.Update()
+
+	ddat, err := NewDashboardData(s)
+	if err != nil {
+		internalError(c, err)
+		return
+	}
+
+	c.HTML(http.StatusOK, "admin.gohtml", ddat)
 }
 
 func handleAdminLogs(c *gin.Context) {
