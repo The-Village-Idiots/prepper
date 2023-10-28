@@ -2,17 +2,14 @@ package isams
 
 import (
 	"encoding/json"
-	"errors"
 	"fmt"
-	"strconv"
-	"strings"
 	"time"
 )
 
 // fakeUtcZone is the fake time zone for use if one is absent.
 const (
 	fakeUtcZone = "+00:00"
-	fakeKitchen = "03:04"
+	fakeKitchen = "15:04"
 )
 
 // Date is a date format which is compatible with the format ISAMS uses. This
@@ -53,26 +50,9 @@ type Time time.Time
 
 // NewTime parses and returns a new ISAMS-formatted time object.
 func NewTime(src string) (Time, error) {
-	segs := strings.Split(src, ":")
-	if len(segs) != 2 {
-		return Time{}, errors.New("insufficient time segments")
-	}
-
-	hour, err := strconv.ParseInt(segs[0], 10, 32)
+	date, err := time.Parse(fakeKitchen, src)
 	if err != nil {
-		return Time{}, errors.New("invalid hour syntax")
-	}
-
-	suffix := "AM"
-	if hour > 12 {
-		hour -= 12
-		suffix = "PM"
-	}
-
-	newsrc := fmt.Sprintf("%d:%s%s", hour, segs[1], suffix)
-	date, err := time.Parse(time.Kitchen, newsrc)
-	if err != nil {
-		return Time{}, err
+		return Time{}, fmt.Errorf("unmarshal isams date (%s): parsing time: %w", src, err)
 	}
 
 	return Time(date), nil
