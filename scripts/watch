@@ -2,7 +2,7 @@
 
 trap "pkill prepper" 2 15
 
-while ! (find ./ -name "*.go" -print \
+while ! (find ./ -name "*.go" -print -or -name "*.json" -print \
 	| entr -dcs "pkill prepper; go build .; ./prepper &")
 do
 	true
