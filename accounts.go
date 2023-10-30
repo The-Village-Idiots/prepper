@@ -484,5 +484,5 @@ func handleAccountSync(c *gin.Context) {
 		return
 	}
 
-	c.Redirect(http.StatusOK, "/account/"+strconv.FormatUint(uint64(usr.ID), 10))
+	c.Redirect(http.StatusFound, "/account/"+strconv.FormatUint(uint64(usr.ID), 10))
 }
