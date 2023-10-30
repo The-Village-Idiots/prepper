@@ -2,6 +2,7 @@ package main
 
 import (
 	"errors"
+	"log"
 	"net/http"
 	"strconv"
 
@@ -419,4 +420,69 @@ func handleAccountLink(c *gin.Context) {
 	}
 
 	c.Redirect(http.StatusFound, "/account/"+suid+"/timetable")
+}
+
+// handleAccountSync is the handler for "/account/[ID]/sync".
+//
+// Handles the syncing of account details between here and iSAMS.
+func handleAccountSync(c *gin.Context) {
+	s := Sessions.Start(c)
+	defer s.Update()
+
+	ddat, err := NewDashboardData(s)
+	if err != nil {
+		internalError(c, err)
+		return
+	}
+
+	suid := c.Param("id")
+	if suid == "" {
+		c.String(http.StatusBadRequest, "Invalid user ID")
+		return
+	}
+	uid, err := strconv.ParseUint(suid, 10, 32)
+	if err != nil {
+		c.String(http.StatusBadRequest, "Invalid user ID")
+		return
+	}
+
+	// Need to be technician to link another's timetable
+	if uint(uid) != s.UserID && !ddat.User.Can(data.CapManageTimetable) {
+		c.String(http.StatusForbidden, "Permission Denied")
+		return
+	}
+
+	usr, err := data.GetUser(Database, uint(uid))
+	if err != nil {
+		c.String(http.StatusNotFound, "User not Found")
+		return
+	}
+
+	if usr.IsamsID == nil {
+		c.String(http.StatusBadRequest, "Cannot sync on an unlinked account")
+		return
+	}
+
+	iusr, err := ISAMS.FindUser(*usr.IsamsID)
+	if err != nil {
+		internalError(c, err)
+		return
+	}
+
+	// Names
+	usr.Title = iusr.Title
+	usr.FirstName = iusr.Forename
+	usr.LastName = iusr.Surname
+
+	// Contact
+	usr.Email = iusr.SchoolEmailAddress
+	usr.Telephone = iusr.SchoolMobileNumber
+
+	log.Println(c.RemoteIP(), "syncs", usr.Username, "with iSAMS", iusr.UserCode, "--", usr)
+	if err := Database.Updates(&usr).Error; err != nil {
+		internalError(c, err)
+		return
+	}
+
+	c.Redirect(http.StatusOK, "/account/"+strconv.FormatUint(uint64(usr.ID), 10))
 }

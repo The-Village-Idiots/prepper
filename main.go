@@ -128,6 +128,7 @@ func initRoutes(router *gin.Engine) {
 		r.GET("/:id/timetable", handleAccountTimetable)
 		r.GET("/:id/unlink", handleAccountUnlink)
 		r.GET("/:id/link", handleAccountLink)
+		r.GET("/:id/sync", handleAccountSync)
 		r.GET("/new", handleNewAccount)
 		r.GET("/switch", handleAccountSwitch)
 		r.GET("/password", handleChangePassword)
