@@ -1,0 +1,3 @@
+#!/bin/sh
+
+zip -r prepper.zip frontend prepper config.sample.json
