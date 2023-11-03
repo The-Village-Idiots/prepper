@@ -173,6 +173,7 @@ func initRoutes(router *gin.Engine) {
 		r.Any("/", handleAdminRoot)
 		r.GET("/logs", handleAdminLogs)
 		r.GET("/error", handleAdminError)
+		r.GET("/maintenance", handleAdminMaintenance)
 	}
 }
 
@@ -188,9 +189,6 @@ func main() {
 	if err := loadConfig(); err != nil {
 		log.Fatalln(err)
 	}
-
-	// Init maintenance manager
-	Maintenance = maintenance.NewManager(true)
 
 	// ISAMS Support
 	if Config.HasISAMS() {
@@ -241,6 +239,27 @@ func main() {
 	}
 	router.Use(gin.LoggerWithWriter(Dmesg.LogOutput()), gin.Recovery())
 	gin.ForceConsoleColor()
+
+	// Init maintenance manager
+	Maintenance = maintenance.NewManager(true)
+	router.Use(maintenance.MiddlewareWithHandler(&Maintenance, func(c *gin.Context) {
+		_, t := Maintenance.State()
+		ts := "UNKNOWN"
+		fend := time.Now()
+		if t != nil {
+			ts = t.Format(time.RFC1123)
+			fend = t.Add(5 * time.Minute)
+		}
+
+		c.AbortWithStatus(http.StatusServiceUnavailable)
+		fmt.Fprintln(c.Writer,
+			"Prepper is currently down for maintenance and will be offline for 2-3 minutes.\n",
+			"We apologise for any inconvenience.\n\n",
+			"Start time:", ts, "\n",
+			"Predicted End Time:", fend.Format(time.RFC1123),
+		)
+
+	}))
 
 	if err := router.SetTrustedProxies(Config.TrustedProxies); err != nil {
 		log.Fatal("invalid proxy entries: ", err)

@@ -3,7 +3,9 @@ package main
 import (
 	"errors"
 	"io"
+	"log"
 	"net/http"
+	"time"
 
 	"github.com/ejv2/prepper/logging"
 	"github.com/gin-gonic/gin"
@@ -38,4 +40,13 @@ func handleAdminLogs(c *gin.Context) {
 
 func handleAdminError(c *gin.Context) {
 	internalError(c, errors.New("Admin-Triggered Fatal Error"))
+}
+
+func handleAdminMaintenance(c *gin.Context) {
+	if Maintenance.Enter() != nil {
+		log.Panic("somehow got to admin maintenance handler when in maintenance?")
+	}
+
+	log.Println(c.RemoteIP(), "enables maintenance mode from admin panel")
+	c.String(http.StatusOK, "Maintenance mode enabled by system administrator.\nTimestamp: %v", time.Now().Format(time.RFC1123))
 }

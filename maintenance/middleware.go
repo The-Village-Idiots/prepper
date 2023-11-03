@@ -20,11 +20,11 @@ func defaultError(c *gin.Context) {
 	c.String(http.StatusServiceUnavailable, defaultErrorMessage)
 }
 
-func Middleware(m Manager) gin.HandlerFunc {
+func Middleware(m *Manager) gin.HandlerFunc {
 	return MiddlewareWithHandler(m, defaultError)
 }
 
-func MiddlewareWithHandler(m Manager, onError gin.HandlerFunc) gin.HandlerFunc {
+func MiddlewareWithHandler(m *Manager, onError gin.HandlerFunc) gin.HandlerFunc {
 	return func(c *gin.Context) {
 		if m.Is() {
 			onError(c)
