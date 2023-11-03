@@ -38,7 +38,7 @@ func (m Manager) Is() bool {
 //
 // Essentially, if this function returns with a nil error, a request may treat
 // it as though it has an exclusive lock on the site.
-func (m Manager) Enter() error {
+func (m *Manager) Enter() error {
 	m.Lock()
 	defer m.Unlock()
 
@@ -57,7 +57,7 @@ func (m Manager) Enter() error {
 
 // Exit waits for an exclusive lock on the manager before exiting maintenance.
 // If the site is not currently in maintenance, Exit panics.
-func (m Manager) Exit() {
+func (m *Manager) Exit() {
 	m.Lock()
 	defer m.Unlock()
 
