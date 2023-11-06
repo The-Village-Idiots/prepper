@@ -56,7 +56,7 @@ func (s Scheduler) do() {
 		}
 	}
 
-	if s.Err != nil {
+	if s.Err != nil && len(s.Err) > 0 {
 		s.Err <- e
 	}
 }
