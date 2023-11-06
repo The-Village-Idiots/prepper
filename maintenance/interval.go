@@ -5,6 +5,27 @@ import (
 	"time"
 )
 
+// Standard values for the scheduler.
+var (
+	// StandardInterval is the time that the standard interval will fire at
+	// daily.
+	StandardTime time.Time
+	// StandardInterval schedules maintenance for 3:00 AM daily.
+	StandardInterval Daily
+)
+
+const stdIntSrc = "3:00AM"
+
+func init() {
+	si, err := time.Parse(time.Kitchen, stdIntSrc)
+	if err != nil {
+		panic("could not parse standard interval time: " + err.Error())
+	}
+
+	StandardTime = si
+	StandardInterval = Daily{Time: si}
+}
+
 // An Interval is a representation of a specific time interval between
 // automated maintenance periods. It provides a channel which sends a
 // notification message when it is the correct time for maintenance to be

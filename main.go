@@ -47,6 +47,7 @@ var (
 	Sessions    session.Store
 	ISAMS       *isams.ISAMS
 	Maintenance maintenance.Manager
+	MSched      maintenance.Scheduler
 	Dmesg       *logging.Dmesg
 )
 
@@ -178,6 +179,10 @@ func initRoutes(router *gin.Engine) {
 }
 
 func main() {
+	// Setup global context
+	ctx, cf := context.WithCancel(context.Background())
+	defer cf()
+
 	// Init early logging
 	Dmesg = logging.NewDmesg()
 	log.SetOutput(Dmesg.LogOutput())
@@ -241,6 +246,7 @@ func main() {
 	gin.ForceConsoleColor()
 
 	// Init maintenance manager
+	mterr := make(chan error, 1)
 	Maintenance = maintenance.NewManager(true)
 	router.Use(maintenance.MiddlewareWithHandler(&Maintenance, func(c *gin.Context) {
 		_, t := Maintenance.State()
@@ -260,6 +266,24 @@ func main() {
 		)
 
 	}))
+	MSched = maintenance.Scheduler{
+		// TODO: add config variable for this
+		Interval: &maintenance.StandardInterval,
+		Manager:  &Maintenance,
+		Handlers: []func() error{
+			func() error { log.Println("[MAINTENANCE] Routine maintenance begins"); return nil },
+			// TODO: Place maintenance tasks between here
+			func() error { log.Println("[MAINTENANCE] Routine maintenance ends"); return nil },
+		},
+		Ctx: ctx,
+		Err: mterr,
+	}
+	go MSched.Run()
+	go func() {
+		for err := range mterr {
+			log.Println("[MAINTENANCE ERROR]", err)
+		}
+	}()
 
 	if err := router.SetTrustedProxies(Config.TrustedProxies); err != nil {
 		log.Fatal("invalid proxy entries: ", err)
@@ -281,7 +305,7 @@ func main() {
 	select {
 	case <-sigchan:
 		log.Println("Caught interrupt signal. Terminating gracefully...")
-		ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
+		ctx, cancel := context.WithTimeout(ctx, 10*time.Second)
 		defer cancel()
 		err := srv.Shutdown(ctx)
 		if err != nil {
