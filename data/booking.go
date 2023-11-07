@@ -42,6 +42,39 @@ var (
 	ErrNoSuchBooking = errors.New("booking does not exist")
 )
 
+type BookingStatus uint
+
+func (b BookingStatus) String() string {
+	switch b {
+	case BookingStatusPending:
+		return "Pending"
+	case BookingStatusProgress:
+		return "In Progress"
+	case BookingStatusReady:
+		return "Ready"
+	case BookingStatusRejected:
+		return "Rejected"
+	default:
+		return "Unknown"
+	}
+}
+
+func (b BookingStatus) Pending() bool {
+	return b == BookingStatusPending
+}
+
+func (b BookingStatus) Progress() bool {
+	return b == BookingStatusProgress
+}
+
+func (b BookingStatus) Ready() bool {
+	return b == BookingStatusReady
+}
+
+func (b BookingStatus) Rejected() bool {
+	return b == BookingStatusRejected
+}
+
 // A Booking is an entry in the schedule which has an associated activity
 // (temporary or persistent), teacher account and location specification. The
 // location specification stores a location as given by the timetable or other
@@ -54,7 +87,7 @@ type Booking struct {
 	EndTime   time.Time
 	Location  string
 
-	Status uint
+	Status BookingStatus
 
 	ActivityID uint
 	Activity   Activity
@@ -111,4 +144,106 @@ func GetBooking(db *gorm.DB, id uint) (Booking, error) {
 	}
 
 	return u, nil
+}
+
+// GetBookings returns all relevant bookings from the database. Relevant
+// bookings are those with bookings dates greater than the current time.
+func GetBookings(db *gorm.DB) ([]Booking, error) {
+	b := make([]Booking, 0, 5)
+	res := db.Model(&Booking{}).Joins("Activity").Joins("Owner").
+		Where("start_time > ?", time.Now()).
+		Find(&b)
+
+	if err := res.Error; err != nil {
+		return b, fmt.Errorf("get bookings: sql error: %s", err)
+	}
+
+	return b, nil
+}
+
+// GetPersonalBookings further filters down relevant bookings to those which
+// are owned by the given ID.
+func GetPersonalBookings(db *gorm.DB, id uint) ([]Booking, error) {
+	if id == 0 {
+		return nil, fmt.Errorf("get personal bookings for %d: %w", id, ErrInvalidID)
+	}
+
+	b := make([]Booking, 0, 5)
+	res := db.Model(&Booking{}).Joins("Activity").Joins("Owner").
+		Where("start_time > ?", time.Now()).
+		Where(&Booking{OwnerID: id}).
+		Find(&b)
+
+	if err := res.Error; err != nil {
+		return b, fmt.Errorf("get personal bookings for %d: sql error: %w", id, err)
+	}
+
+	return b, nil
+}
+
+// GetBookingsRange returns all relevant bookings from the database which fall
+// within the given timeframe. A booking is defined as within the current
+// timeframe if any part of its booked period intersects with the period
+// defined by the closed range start to end. Relevant bookings are those with
+// bookings dates greater than the current time.
+func GetBookingsRange(db *gorm.DB, start, end time.Time) ([]Booking, error) {
+	b := make([]Booking, 0, 5)
+	res := db.Model(&Booking{}).Joins("Activity").Joins("Owner").
+		Where(`
+			(start_time <= ? AND end_time >= ?) OR
+			(start_time >= ? AND start_time <= ?)
+		 `, start, start, start, end).
+		Find(&b)
+
+	if err := res.Error; err != nil {
+		return b, fmt.Errorf("get bookings: sql error: %s", err)
+	}
+
+	return b, nil
+}
+
+// GetPersonalBookingsRange filters bookings in the given range to those booked
+// by the given ID.
+func GetPersonalBookingsRange(db *gorm.DB, uid uint, start, end time.Time) ([]Booking, error) {
+	b := make([]Booking, 0, 5)
+	res := db.Model(&Booking{}).Joins("Activity").Joins("Owner").
+		Where(&Booking{OwnerID: uid}).
+		Where(`
+			(start_time <= ? AND end_time >= ?) OR
+			(start_time >= ? AND start_time <= ?)
+		 `, start, start, start, end).
+		Find(&b)
+
+	if err := res.Error; err != nil {
+		return b, fmt.Errorf("get bookings: sql error: %s", err)
+	}
+
+	return b, nil
+}
+
+// GetOngoingBookings returns any bookings which are currently ongoing. These
+// are defined as bookings which intersect with the current minute.
+func GetOngoingBookings(db *gorm.DB) ([]Booking, error) {
+	return GetBookingsRange(db, time.Now().Truncate(time.Minute), time.Now().Truncate(time.Minute).Add(time.Minute))
+}
+
+// GetPersonalBookings filters ongoing bookings to those booked by the given
+// user ID.
+func GetPersonalOngoingBookings(db *gorm.DB, uid uint) ([]Booking, error) {
+	return GetPersonalBookingsRange(db, uid, time.Now().Truncate(time.Minute), time.Now().Truncate(time.Minute).Add(time.Minute))
+}
+
+// GetCurrentBooking gets the most likely currently ongoing booking for the
+// given user.
+func GetCurrentBooking(db *gorm.DB, uid uint) (Booking, error) {
+	o, err := GetPersonalOngoingBookings(db, uid)
+	if err != nil {
+		return Booking{}, err
+	}
+
+	if len(o) == 0 {
+		return Booking{}, fmt.Errorf("get current booking for %v: nothing appropriate", uid)
+	}
+
+	return o[0], nil
 }

@@ -33,7 +33,8 @@ type Activity struct {
 	// Temporary activies are those which have an associated booking. All
 	// others are to be used as templates for others and are copied upon
 	// use.
-	Temporary bool
+	Temporary  bool
+	CopiedFrom uint
 
 	// Used to link to individual EquipmentItem(s).
 	// Link via foreign key in EquipmentSet.
@@ -48,6 +49,8 @@ func (a Activity) Temp() Activity {
 	// Overwrite with generic values
 	act.Description = fmt.Sprintf("Temporary activity copied from \"%s\"", a.Title)
 	act.Temporary = true
+	act.CopiedFrom = a.ID
+	act.ID = 0
 
 	// Blank data which we expect to fill in later
 	act.Model = nil
@@ -158,6 +161,25 @@ func (a Activity) ItemQuantity(i EquipmentItem) uint {
 	}
 
 	return 0
+}
+
+// Parent returns the activity which this activity was copied from, if
+// appropriate. If not appropriate or not possible, a copy of this activity is
+// returned.
+func (a Activity) Parent(db *gorm.DB) Activity {
+	if !a.Temporary {
+		return a
+	}
+
+	act := Activity{}
+	err := db.Where(Activity{Model: &gorm.Model{ID: a.CopiedFrom}}).
+		Preload("Equipment").Preload("Equipment.Item").
+		First(&act).Error
+	if err != nil {
+		return a
+	}
+
+	return act
 }
 
 // EquipmentSet is the link table for equipment used in an activity.

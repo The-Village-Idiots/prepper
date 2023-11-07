@@ -50,11 +50,64 @@ func handleDashboard(c *gin.Context) {
 	s := Sessions.Start(c)
 	defer s.Update()
 
-	dat, err := NewDashboardData(s)
+	ddat, err := NewDashboardData(s)
 	if err != nil {
 		internalError(c, err)
 		return
 	}
+
+	var bk []data.Booking
+	var obk []data.Booking
+	var dbk []data.Booking
+	if ddat.User.IsTechnician() {
+		bk, err = data.GetBookings(Database)
+		if err != nil {
+			internalError(c, err)
+			return
+		}
+
+		obk, err = data.GetOngoingBookings(Database)
+		if err != nil {
+			internalError(c, err)
+			return
+		}
+
+		dbk, err = data.GetBookingsRange(Database, time.Now().Truncate(24*time.Hour), time.Now().Truncate(24*time.Hour).Add(24*time.Hour))
+		if err != nil {
+			internalError(c, err)
+			return
+		}
+	}
+
+	ubk, err := data.GetPersonalBookingsRange(Database, s.UserID,
+		time.Now().Truncate(24*time.Hour), time.Now().Truncate(24*time.Hour).Add(24*time.Hour))
+	if err != nil {
+		internalError(c, err)
+		return
+	}
+
+	uuobk, err := data.GetCurrentBooking(Database, s.UserID)
+	var uoba *data.Activity
+	if err != nil {
+		uoba = nil
+	} else {
+		uuoba := uuobk.Activity.Parent(Database)
+		uoba = &uuoba
+	}
+
+	dat := struct {
+		DashboardData
+		// Bookings from this user
+		PersonalBookings []data.Booking
+		// Bookings from any user
+		Bookings []data.Booking
+		// Bookings from any user as of today
+		DailyBookings []data.Booking
+		// Bookings which are currently ongoing
+		OngoingBookings []data.Booking
+		// Likely current booking
+		LikelyCurrent *data.Activity
+	}{ddat, ubk, bk, dbk, obk, uoba}
 
 	c.HTML(http.StatusOK, "dashboard.gohtml", dat)
 }

@@ -1,5 +1,38 @@
 <!DOCTYPE html>
 
+{{define "daily_table"}}
+<table class="table table-sm">
+	<thead>
+		<tr>
+			<th scope="col">#</th>
+			<th scope="col">Activity</th>
+			<th scope="col">Location</th>
+			<th scope="col">Teacher</th>
+			<th scope="col">Timings</th>
+			<th scope="col">Status</th>
+		</tr>
+	</thead>
+
+	<tbody>
+		{{range .}}
+			<tr>
+				<td>{{.ID}}</td>
+				<td>{{.Activity.Title}}</td>
+				<td>{{.Location}}</td>
+				<td>{{.Owner.DisplayName}} ({{.Owner.Username}})</td>
+				<td>{{.StartTime.Format "15:04"}} - {{.EndTime.Format "15:04"}}</td>
+				<td>
+					{{if .Status.Ready}}<span class="text-success">{{.Status}}</span>{{end}}
+					{{if .Status.Pending}}<span class="text-secondary">{{.Status}}</span>{{end}}
+					{{if .Status.Progress}}<span class="text-primary">{{.Status}}</span>{{end}}
+					{{if .Status.Rejected}}<span class="text-danger">{{.Status}}</span>{{end}}
+				</td>
+			</tr>
+		{{end}}
+	</tbody>
+</table>
+{{end}}
+
 <html>
 	<head>
 		{{template "head.gohtml" "Dashboard"}}
@@ -13,14 +46,83 @@
 			<hr>
 
 			<div class="mt-4">
-				<div class="card">
+				{{if .User.IsTechnician}}
+					<p>There are currently <strong>{{len .Bookings}}</strong> upcoming bookings in need of attention.</p>
+				{{else}}
+					<p>You currently have <strong>{{len .PersonalBookings}}</strong> upcoming bookings.</p>
+				{{end}}
+
+				{{if not .User.IsTechnician}}
+					{{if .LikelyCurrent}}
+						<div class="card mb-2">
+							<div class="card-header">
+								<h3>Current Activity</h3>
+							</div>
+							<div class="card-body">
+								<h5 class="card-title">{{.LikelyCurrent.Title}}</h5>
+								<p class="card-text">
+									{{.LikelyCurrent.Description}} Uses {{.LikelyCurrent.TotalQuantity}} pieces of equipment.
+								</p>
+
+								<a href="/activity/{{.LikelyCurrent.ID}}">More Info</a>
+							</div>
+						</div>
+					{{end}}
+				{{end}}
+
+				{{if .User.IsTechnician}}
+					<div class="card mb-2">
+						<div class="card-header">
+							<h3>Ongoing Bookings</h3>
+						</div>
+						<div class="card-body">
+							<p class="card-text">Bookings booked for the current time period are shown.</p>
+
+							<table class="table table-sm">
+								<thead>
+									<tr>
+										<th scope="col">#</th>
+										<th scope="col">Activity</th>
+										<th scope="col">Location</th>
+										<th scope="col">Teacher</th>
+										<th scope="col">Timings</th>
+										<th scope="col">Status</th>
+									</tr>
+								</thead>
+
+								<tbody>
+									{{range .OngoingBookings}}
+										<tr>
+											<td>{{.ID}}</td>
+											<td>{{.Activity.Title}}</td>
+											<td>{{.Location}}</td>
+											<td>{{.Owner.DisplayName}} ({{.Owner.Username}})</td>
+											<td>{{.StartTime.Format "15:04"}} - {{.EndTime.Format "15:04"}}</td>
+											<td>
+												{{if .Status.Ready}}<span class="text-success">{{.Status}}</span>{{end}}
+												{{if or .Status.Progress .Status.Pending}}<span class="text-warning">{{.Status}}</span>{{end}}
+												{{if .Status.Rejected}}<span class="text-danger">{{.Status}}</span>{{end}}
+											</td>
+										</tr>
+									{{end}}
+								</tbody>
+							</table>
+						</div>
+					</div>
+				{{end}}
+
+				<div class="card mb-2">
 					<div class="card-header">
-						<h3>Schedule Today</h3>
+						<h3>{{if not .User.IsTechnician}}Your{{end}} Bookings Today</h3>
 					</div>
 					<div class="card-body">
-						<h5 class="card-title">Card title</h5>
-						<p class="card-text">Some quick example text to build on the card title and make up the bulk of the card's content.</p>
-						<a href="#" class="btn btn-primary">Go somewhere</a>
+						<p class="card-text">Bookings for the day ahead are shown. {{if .User.IsTechnician}}For bookings to deliver, please see ongoings above.{{end}}</p>
+
+						{{if .User.IsTechnician}}
+							{{template "daily_table" .DailyBookings}}
+						{{else}}
+							{{template "daily_table" .PersonalBookings}}
+						{{end}}
 					</div>
 				</div>
 			</div>
