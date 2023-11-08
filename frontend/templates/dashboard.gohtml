@@ -48,11 +48,14 @@
 			<hr>
 
 			<div class="mt-4">
-				{{if .User.IsTechnician}}
-					<p>There are currently <strong>{{len .Bookings}}</strong> upcoming bookings in need of attention.</p>
-				{{else}}
-					<p>You currently have <strong>{{len .PersonalBookings}}</strong> upcoming bookings.</p>
-				{{end}}
+				<p>
+					The time now is {{.Time.Format "3:04 AM"}}.
+					{{if .User.IsTechnician}}
+						There are currently <strong>{{len .Bookings}}</strong> upcoming bookings in need of attention.
+					{{else}}
+						You currently have <strong>{{len .PersonalBookings}}</strong> upcoming bookings.
+					{{end}}
+				</p>
 
 				{{if not .User.IsTechnician}}
 					{{if .LikelyCurrent}}
