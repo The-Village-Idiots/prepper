@@ -21,7 +21,7 @@ var (
 	ErrRequest     = errors.New("request failed")
 	ErrRequestIO   = errors.New("request I/O failed")
 	ErrEncoding    = errors.New("bad response encoding")
-	ErrPrepopulate = errors.New("prepopulation failed")
+	ErrPrepopulate = errors.New("prepopulation")
 
 	ErrNotFound = errors.New("not found")
 	ErrEmptySet = errors.New("nothing matching found")
@@ -58,7 +58,7 @@ func (i *ISAMS) request() (*isamsResponse, error) {
 
 	resp, err := i.client.Get(i.endpoint.String())
 	if err != nil {
-		return nil, fmt.Errorf("isams at %s: %w: %s", i.endpoint.String(), ErrRequest, err.Error())
+		return nil, fmt.Errorf("%w: %s", ErrRequest, err.Error())
 	}
 
 	if resp.StatusCode != http.StatusOK {
