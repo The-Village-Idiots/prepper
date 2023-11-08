@@ -36,9 +36,11 @@
 <html>
 	<head>
 		{{template "head.gohtml" "Dashboard"}}
+
+		<script src="/assets/scripts/dashboard.js"></script>
 	</head>
 
-	<body>
+	<body onload="onload()">
 		{{template "dashnav.gohtml" .}}
 
 		<div class="container container-fluid mt-3">
