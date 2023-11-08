@@ -3,6 +3,7 @@ package main
 import (
 	"fmt"
 	"net/http"
+	"net/url"
 	"strconv"
 	"time"
 
@@ -102,10 +103,14 @@ func handleInventory(c *gin.Context) {
 		return
 	}
 
+	dname, del := c.GetQuery("deleted")
+
 	dat := struct {
 		DashboardData
-		Inventory []AnnotatedItem
-	}{ddat, make([]AnnotatedItem, 0, len(e))}
+		Inventory   []AnnotatedItem
+		Deleted     bool
+		DeletedName string
+	}{ddat, make([]AnnotatedItem, 0, len(e)), del, dname}
 
 	for _, eq := range e {
 		i, err := NewAnnotatedItem(eq)
@@ -120,7 +125,7 @@ func handleInventory(c *gin.Context) {
 	c.HTML(http.StatusOK, "inventory.gohtml", dat)
 }
 
-// handleItem is the handler for "/inventory/[ITEM]".
+// handleItem is the handler for "/inventory/item/[ITEM]".
 //
 // Returns an HTML edit page for the given item ID.
 func handleItem(c *gin.Context) {
@@ -338,4 +343,47 @@ func handleInventoryLocate(c *gin.Context) {
 	}
 
 	c.HTML(http.StatusOK, "inventory-find.gohtml", dat)
+}
+
+// handleItemDelete is the handler for "/inventory/item/[ID]/delete"
+//
+// Marks the item with the ID given in the URI parameter
+// as deleted.
+func handleItemDelete(c *gin.Context) {
+	s := Sessions.Start(c)
+	defer s.Update()
+
+	ddat, err := NewDashboardData(s)
+	if err != nil {
+		internalError(c, err)
+		return
+	}
+
+	if !ddat.User.Can(data.CapManageOtherInventory) {
+		c.String(http.StatusForbidden, "Access Denied")
+		return
+	}
+
+	sid := c.Param("id")
+	lid, err := strconv.ParseUint(sid, 10, 32)
+	id := uint(lid)
+	if err != nil {
+		c.String(http.StatusBadRequest, "Bad Item ID")
+		return
+	}
+
+	it, err := data.GetEquipmentItem(Database, id)
+	if err != nil {
+		c.String(http.StatusNotFound, "Item Not Found")
+		return
+	}
+
+	res := Database.Delete(&it)
+	if res.Error != nil {
+		internalError(c, err)
+		return
+	}
+
+	ename := url.QueryEscape(it.Name)
+	c.Redirect(http.StatusFound, "/inventory/?deleted="+ename)
 }

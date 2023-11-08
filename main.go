@@ -140,6 +140,7 @@ func initRoutes(router *gin.Engine) {
 	{
 		r.GET("/", handleInventory)
 		r.GET("/item/:id", handleItem)
+		r.GET("/item/:id/delete", handleItemDelete)
 		r.GET("/item/:id/locate", handleItemLocate)
 		r.GET("/new", handleNewItem)
 		r.GET("/report", handleInventoryReport)

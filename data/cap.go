@@ -23,7 +23,8 @@ const (
 	CapAllBooking = UserTechnician
 
 	// Technicians may manage the inventory database.
-	CapManageInventory = UserTechnician
+	CapManageInventory      = UserTechnician
+	CapManageOtherInventory = UserAdmin
 
 	// View server logs.
 	CapLogging = UserAdmin

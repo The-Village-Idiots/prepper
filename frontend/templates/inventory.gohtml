@@ -16,6 +16,12 @@
 			<hr>
 
 			<div class="mt-4">
+				{{if .Deleted}}
+					<div class="alert alert-info">
+						<strong>Item Deleted</strong> The item "{{.DeletedName}}" has been deleted.
+					</div>
+				{{end}}
+
 				<input id="itemSearch" class="w-25 mb-3 form-control form-control-sm" type="text" placeholder="Search" onkeyup="update_search()">
 
 				<table id="itemsTable" class="table table-striped">
@@ -45,6 +51,7 @@
 								<td>
 									<a href="/inventory/item/{{.ID}}">Modify</a>
 									<a href="/inventory/item/{{.ID}}/locate">Locate</a>
+									<a class="text-danger" href="/inventory/item/{{.ID}}/delete">Delete</a>
 								</td>
 							</tr>
 						{{end}}
