@@ -49,7 +49,7 @@
 
 			<div class="mt-4">
 				<p>
-					The time now is {{.Time.Format "3:04 PM"}}.
+					The time now is <span id="current_time">{{.Time.Format "3:04 PM"}}</span>.
 					{{if .User.IsTechnician}}
 						There are currently <strong>{{len .Bookings}}</strong> upcoming bookings in need of attention.
 					{{else}}
