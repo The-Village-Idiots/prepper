@@ -493,3 +493,49 @@ func handleBooking(c *gin.Context) {
 
 	c.HTML(http.StatusOK, "booking.gohtml", dat)
 }
+
+// handleBookCancel is the handler for "/book/booking/[ID]/cancel".
+//
+// Marks the given activity as deleted. This does preserve the record in the
+// database.
+func handleBookCancel(c *gin.Context) {
+	s := Sessions.Start(c)
+	defer s.Update()
+
+	ddat, err := NewDashboardData(s)
+	if err != nil {
+		internalError(c, err)
+		return
+	}
+
+	sid := c.Param("id")
+	lid, err := strconv.ParseUint(sid, 10, 32)
+	if err != nil {
+		c.String(http.StatusBadRequest, "Bad Booking ID")
+		return
+	}
+	id := uint(lid)
+
+	bk, err := data.GetBooking(Database, id)
+	if err != nil {
+		if errors.Is(err, data.ErrNoSuchBooking) {
+			c.String(http.StatusNotFound, "Booking Not Found")
+			return
+		}
+
+		internalError(c, err)
+		return
+	}
+
+	if bk.OwnerID != s.UserID && !ddat.User.Can(data.CapAllBooking) {
+		c.String(http.StatusForbidden, "Permission Denied")
+		return
+	}
+
+	res := Database.Delete(&bk)
+	if err := res.Error; err != nil {
+		internalError(c, err)
+	}
+
+	c.Redirect(http.StatusFound, "/dashboard/")
+}
