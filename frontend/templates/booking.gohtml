@@ -59,6 +59,10 @@
 				</div>
 
 				<h3>Activity Details</h3>
+				<p>
+					For this activity, you have booked a total of <strong>{{len .Booking.Activity.Equipment}}</strong> items
+					for a total requisitioned quantity of <strong>{{.Booking.Activity.TotalQuantity}}</strong>.
+				</p>
 				<table class="table table-striped">
 					<thead>
 						<tr>
@@ -88,12 +92,14 @@
 				<hr>
 				<div class="text-center">
 					<a href="/dashboard/">Back to Dashboard</a>
+					{{if eq .User.ID .Booking.OwnerID}}
 					|
 					<a href="/book/">Re-Book Another Activity</a>
 					|
 					<a href="/book/{{.Activity.ID}}">Re-Book This Activity</a>
 					|
 					<a class="text-danger" href="/book/booking/{{.Booking.ID}}/cancel">Cancel This Booking</a>
+					{{end}}
 				</div>
 			</div>
 		</div>
