@@ -1,0 +1,101 @@
+<!DOCTYPE html>
+
+<html>
+	<head>
+		{{template "head.gohtml" (println "View Booking" .Booking.ID "for" .Activity.Title)}}
+	</head>
+
+	<body>
+		{{template "dashnav.gohtml" .}}
+
+		<div class="container container-fluid mt-3">
+			<h1>Booking Ticket #{{.Booking.ID}}</h1>
+			<hr>
+
+			<div class="mt-2">
+				<p>
+					Below is a short summary of your booking request as recieved by a technician.
+					If there is a mistake, please create a new booking having corrected the error and cancel this one.
+				</p>
+				<hr>
+
+				<h3>Booking Details</h3>
+				<div class="row">
+					<div class="col-lg p-4">
+						<p>Booked Activity: {{.Activity.Title}}</p>
+					</div>
+
+					<div class="col-lg p-4">
+						<p>
+							Booking Status: 
+							{{if .Booking.Status.Pending}}<span class="text-secondary">{{.Booking.Status}}</span>{{end}}
+							{{if .Booking.Status.Progress}}<span class="text-primary">{{.Booking.Status}}</span>{{end}}
+							{{if .Booking.Status.Ready}}<span class="text-success">{{.Booking.Status}}</span>{{end}}
+							{{if .Booking.Status.Rejected}}<span class="text-danger">{{.Booking.Status}}</span>{{end}}
+						</p>
+					</div>
+				</div>
+
+				<div class="row">
+					<div class="col-lg ps-4 pe-4">
+						<p>Booked Activity Description: {{.Activity.Description}}</p>
+					</div>
+				</div>
+
+				<div class="row">
+					<div class="col-lg p-4">
+						<p>Booking Start Date: {{.Booking.StartTime}}</p>
+					</div>
+
+					<div class="col-lg p-4">
+						<p>Booking End Date {{.Booking.EndTime}}</p>
+					</div>
+				</div>
+
+				<div class="row">
+					<div class="col-lg ps-4 pe-4">
+						<p>Booking Location {{.Booking.Location}}</p>
+					</div>
+				</div>
+
+				<h3>Activity Details</h3>
+				<table class="table table-striped">
+					<thead>
+						<tr>
+							<th scope="col">Name</th>
+							<th scope="col">Quantity</th>
+							<th scope="col">Important</th>
+						</tr>
+					</thead>
+
+					<tbody>
+						{{range .Booking.Activity.Equipment}}
+							<tr>
+								<td>{{.Item.Name}}</td>
+								<td>{{.Quantity}}</td>
+								<td>
+									{{if .Important}}
+										<span class="text-danger">Yes</span>
+									{{else}}
+										<span class="text-secondary">No</span>
+									{{end}}
+								</td>
+							</tr>
+						{{end}}
+					</tbody>
+				</table>
+
+				<hr>
+				<div class="text-center">
+					<a href="/dashboard/">Back to Dashboard</a>
+					|
+					<a href="/book/">Re-Book Another Activity</a>
+					|
+					<a href="/book/{{.Activity.ID}}">Re-Book This Activity</a>
+					|
+					<a class="text-danger" href="/book/booking/{{.Booking.ID}}/cancel">Cancel This Booking</a>
+				</div>
+			</div>
+		</div>
+	</body>
+</html>

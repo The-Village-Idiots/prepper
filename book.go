@@ -450,3 +450,46 @@ func handleBookSuccess(c *gin.Context) {
 
 	c.HTML(http.StatusOK, "book-complete.gohtml", dat)
 }
+
+// handleBooking is the handler for "/book/booking/[ID]".
+//
+// Shows an HTML summary page for this booking. Intended for use mainly by the
+// teacher who created the booking (the owner), unless the user has privileges
+// to edit other users' bookings.
+func handleBooking(c *gin.Context) {
+	s := Sessions.Start(c)
+	defer s.Update()
+
+	ddat, err := NewDashboardData(s)
+	if err != nil {
+		internalError(c, err)
+		return
+	}
+
+	sid := c.Param("id")
+	lid, err := strconv.ParseUint(sid, 10, 32)
+	if err != nil {
+		c.String(http.StatusBadRequest, "Bad Booking ID")
+		return
+	}
+	id := uint(lid)
+
+	bk, err := data.GetBooking(Database, id)
+	if err != nil {
+		if errors.Is(err, data.ErrNoSuchBooking) {
+			c.String(http.StatusNotFound, "Booking Not Found")
+			return
+		}
+
+		internalError(c, err)
+		return
+	}
+
+	dat := struct {
+		DashboardData
+		Booking  data.Booking
+		Activity data.Activity
+	}{ddat, bk, bk.Activity.Parent(Database)}
+
+	c.HTML(http.StatusOK, "booking.gohtml", dat)
+}

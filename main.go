@@ -157,6 +157,8 @@ func initRoutes(router *gin.Engine) {
 		r.GET("/:activity/submit", handleBookSubmission)
 
 		r.GET("/success/:id", handleBookSuccess)
+
+		r.GET("/booking/:id", handleBooking)
 	}
 
 	r = router.Group("/api/")
