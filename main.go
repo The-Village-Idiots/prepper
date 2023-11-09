@@ -22,6 +22,7 @@ import (
 	"github.com/ejv2/prepper/isams"
 	"github.com/ejv2/prepper/logging"
 	"github.com/ejv2/prepper/maintenance"
+	"github.com/ejv2/prepper/notifications"
 	"github.com/ejv2/prepper/session"
 
 	"github.com/gin-gonic/gin"
@@ -42,13 +43,14 @@ const (
 
 // Lifetime application state.
 var (
-	Config      conf.Config
-	Database    *gorm.DB
-	Sessions    session.Store
-	ISAMS       *isams.ISAMS
-	Maintenance maintenance.Manager
-	MSched      maintenance.Scheduler
-	Dmesg       *logging.Dmesg
+	Config        conf.Config
+	Database      *gorm.DB
+	Sessions      session.Store
+	ISAMS         *isams.ISAMS
+	Maintenance   maintenance.Manager
+	MSched        maintenance.Scheduler
+	Dmesg         *logging.Dmesg
+	Notifications *notifications.Store
 )
 
 func loadConfig() error {
@@ -161,6 +163,7 @@ func initRoutes(router *gin.Engine) {
 	{
 		r.Any("/", handleAPIRoot)
 		r.POST("/user/edit/:id", handleAPIEditUser)
+		r.GET("/dashboard", handleAPIDashboard)
 
 		r = r.Group("/item/", session.Permissions(&Sessions, Database, data.CapManageInventory, false))
 		{
@@ -210,6 +213,9 @@ func main() {
 
 	// Init session storage
 	Sessions = session.NewStore()
+
+	// Notifications storage
+	Notifications = notifications.NewStore()
 
 	// Connect to database
 	if err := initDatabase(Config); err != nil {

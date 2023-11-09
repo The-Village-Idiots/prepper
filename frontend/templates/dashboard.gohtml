@@ -43,11 +43,31 @@
 	<body onload="onload()">
 		{{template "dashnav.gohtml" .}}
 
+		<template id="toast_template">
+			<div class="toast show tex-bg-primary" role="alert" id="new-notification">
+				<div class="toast-header">
+					<strong class="me-auto toast-title">Bootstrap</strong>
+					<small class="text-body-secondary toast-timing">just now</small>
+					<button type="button" class="btn-close" data-bs-dismiss="toast"></button>
+				</div>
+				<div class="toast-body">
+				</div>
+			</div>
+		</template>
+
+		<div id="notification_area" class="toast-container position-fixed bottom-0 end-0 p-3"></div>
+
 		<div class="container container-fluid mt-3">
 			<h1>{{.Greeting}}, {{.User.DisplayName}}</h1>
 			<hr>
 
 			<div class="mt-4">
+				<div class="alert alert-danger d-none" id="reload_failure">
+					<strong>Failed to fetch notifications</strong>
+					Failed to fetch updated data from the server.
+					Error Message: <span id="save_error"></span>
+				</div>
+
 				<p>
 					The time now is <span id="current_time">{{.Time.Format "3:04 PM"}}</span>.
 					{{if .User.IsTechnician}}

@@ -4,11 +4,18 @@ import (
 	"log"
 	"net/http"
 	"strconv"
+	"time"
 
 	"github.com/ejv2/prepper/data"
+	"github.com/ejv2/prepper/notifications"
 	"github.com/gin-gonic/gin"
 	"gorm.io/gorm"
 )
+
+type formattedNotification struct {
+	notifications.Notification
+	FmtTime string `json:"fmt_time"`
+}
 
 // handleAPIRoot is the handler for "/api/".
 //
@@ -247,4 +254,26 @@ func handleAPIEditItem(c *gin.Context) {
 	}
 
 	c.JSON(http.StatusOK, i)
+}
+
+// handleAPIDashboard is the handler for "/api/dashboard".
+func handleAPIDashboard(c *gin.Context) {
+	s := Sessions.Start(c)
+	defer s.Update()
+
+	// Pull out maximum of 5 notifications, or the length of the queue (whichever is lower)
+	a := make([]formattedNotification, 0, 5)
+	for i := 0; i < 5; i++ {
+		n, err := Notifications.PopUser(s.UserID)
+		if err != nil {
+			break
+		}
+
+		a = append(a, formattedNotification{n, n.Time.Format(time.Kitchen)})
+	}
+
+	c.JSON(http.StatusOK, gin.H{
+		"time":          time.Now().Format(time.Kitchen),
+		"notifications": a,
+	})
 }
