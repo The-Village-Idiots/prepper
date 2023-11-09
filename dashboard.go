@@ -106,8 +106,9 @@ func handleDashboard(c *gin.Context) {
 		// Bookings which are currently ongoing
 		OngoingBookings []data.Booking
 		// Likely current booking
-		LikelyCurrent *data.Activity
-	}{ddat, ubk, bk, dbk, obk, uoba}
+		LikelyCurrent        *data.Activity
+		LikelyCurrentBooking data.Booking
+	}{ddat, ubk, bk, dbk, obk, uoba, uuobk}
 
 	c.HTML(http.StatusOK, "dashboard.gohtml", dat)
 }
