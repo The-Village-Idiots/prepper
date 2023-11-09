@@ -146,6 +146,17 @@ func GetUsers(db *gorm.DB) ([]User, error) {
 	return us, nil
 }
 
+// GetRoleUsers returns all users of a given role.
+func GetRoleUsers(db *gorm.DB, role UserRole) ([]User, error) {
+	var us []User
+	res := db.Where("Role = ?", role).Find(&us)
+	if err := res.Error; err != nil {
+		return us, fmt.Errorf("find %ss: sql error: %w", role.String(), err)
+	}
+
+	return us, nil
+}
+
 // Calls u.Password.Set with the current user as an argument.
 func (u *User) SetPassword(pw string) error {
 	return u.Password.Set(pw, u)
