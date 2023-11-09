@@ -535,6 +535,23 @@ func handleBookCancel(c *gin.Context) {
 	res := Database.Delete(&bk)
 	if err := res.Error; err != nil {
 		internalError(c, err)
+		return
+	}
+
+	// Notify technicians of the cancellation.
+	urs, err := data.GetRoleUsers(Database, data.UserTechnician)
+	if err != nil {
+		internalError(c, err)
+		return
+	}
+	for _, usr := range urs {
+		Notifications.PushUser(usr.ID, notifications.Notification{
+			Title:  "Booking Cancelled",
+			Body:   fmt.Sprint(ddat.User.DisplayName(), " (", ddat.User.Username, ") cancelled a booking of ", bk.Activity.Title, " for ", bk.StartTime.Format(time.Kitchen)),
+			Action: "/tasks/",
+			Type:   notifications.TypeDanger,
+			Time:   time.Now(),
+		})
 	}
 
 	c.Redirect(http.StatusFound, "/dashboard/")
