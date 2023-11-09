@@ -13,6 +13,7 @@ import (
 
 	"github.com/ejv2/prepper/data"
 	"github.com/ejv2/prepper/isams"
+	"github.com/ejv2/prepper/notifications"
 	"github.com/gin-gonic/gin"
 	"gorm.io/gorm"
 )
@@ -302,6 +303,12 @@ func handleBookSubmission(c *gin.Context) {
 	s := Sessions.Start(c)
 	defer s.Update()
 
+	usr, err := data.GetUser(Database, s.UserID)
+	if err != nil {
+		internalError(c, err)
+		return
+	}
+
 	sid := c.Param("activity")
 	lid, err := strconv.ParseUint(sid, 10, 32)
 	if err != nil {
@@ -386,6 +393,21 @@ func handleBookSubmission(c *gin.Context) {
 	if err != nil {
 		internalError(c, err)
 		return
+	}
+
+	// Push notification out to technicians
+	urs, err := data.GetRoleUsers(Database, data.UserTechnician)
+	if err == nil {
+		// Ignore errors and just push the booking
+		for _, u := range urs {
+			Notifications.PushUser(u.ID, notifications.Notification{
+				Title:  fmt.Sprint("New Booking for ", usr.DisplayName(), " (", usr.Username, ")"),
+				Body:   fmt.Sprintln(usr.DisplayName(), "booked", act.Title, "for", bk.StartTime.Format(time.Kitchen), "-", bk.EndTime.Format(time.Kitchen)),
+				Type:   notifications.TypeImportant,
+				Action: "/tasks/",
+				Time:   time.Now(),
+			})
+		}
 	}
 
 	c.Redirect(http.StatusFound, fmt.Sprint("/book/success/", bk.ID))
