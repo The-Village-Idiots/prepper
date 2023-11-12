@@ -96,6 +96,23 @@ type Booking struct {
 	Owner   User
 }
 
+// Past returns true if the end time of the given booking is before the current
+// instant in time.
+func (b Booking) Past() bool {
+	return b.EndTime.Before(time.Now())
+}
+
+// Ongoing returns true if the booking is currently ongoing. A booking is
+// currently ongoing if the region of time defined by the closed interval over
+// [StartTime, EndTime] intersects the the current minute.
+func (b Booking) Ongoing() bool {
+	t := time.Now().Truncate(time.Minute)
+	te := t.Add(time.Minute)
+
+	return (b.StartTime.Before(t) && b.EndTime.After(t)) ||
+		(b.StartTime.After(t) && b.StartTime.Before(te))
+}
+
 // NewBooking inserts a new booking from the specified activity into the
 // database. The owner is taken to be the owner of act. If act is not yet a
 // temporary activity, an error is returned. Else, all errors returned will be
@@ -216,6 +233,20 @@ func GetPersonalBookingsRange(db *gorm.DB, uid uint, start, end time.Time) ([]Bo
 
 	if err := res.Error; err != nil {
 		return b, fmt.Errorf("get bookings: sql error: %s", err)
+	}
+
+	return b, nil
+}
+
+// GetBookingsStatus returns all bookings of the given status.
+func GetBookingsStatus(db *gorm.DB, status BookingStatus) ([]Booking, error) {
+	b := make([]Booking, 0, 5)
+	res := db.Model(&Booking{}).Joins("Activity").Joins("Owner").
+		Where(&Booking{Status: status}).
+		Find(&b)
+
+	if err := res.Error; err != nil {
+		return b, fmt.Errorf("get %s bookings: sql error: %w", status, err)
 	}
 
 	return b, nil

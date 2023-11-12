@@ -123,6 +123,9 @@ func initRoutes(router *gin.Engine) {
 	// Dashboard (requires authentication)
 	router.GET("/dashboard/", session.Authenticator(&Sessions, true), handleDashboard)
 
+	// Technician todo list
+	router.GET("/todo/", session.Permissions(&Sessions, Database, data.CapAllBooking, true), handleTodo)
+
 	// Account settings
 	r := router.Group("/account/", session.Authenticator(&Sessions, true))
 	{

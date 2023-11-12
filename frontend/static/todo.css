@@ -1,0 +1,32 @@
+/* Part of Prepper
+ * Copyright (C) 2023 - Ethan Marshall
+ *
+ * Todo list styles
+ */
+
+.list-container {
+	margin: 0px !important;
+	margin-left: 10px !important;
+	margin-top: 10px !important;
+	padding: 0px !important;
+
+	width: 100% !important;
+	min-width: 100% !important;
+
+	overflow-x: scroll !important;
+	overflow-y: hidden !important;
+}
+
+.list-card {
+	max-height: 100%;
+}
+
+.half-height {
+	height: 50%;
+	min-height: 50%;
+	max-height: 50%;
+}
+
+.card-body {
+	overflow-y: scroll;
+}
