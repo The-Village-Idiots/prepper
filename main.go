@@ -123,9 +123,6 @@ func initRoutes(router *gin.Engine) {
 	// Dashboard (requires authentication)
 	router.GET("/dashboard/", session.Authenticator(&Sessions, true), handleDashboard)
 
-	// Technician todo list
-	router.GET("/todo/", session.Permissions(&Sessions, Database, data.CapAllBooking, true), handleTodo)
-
 	// Account settings
 	r := router.Group("/account/", session.Authenticator(&Sessions, true))
 	{
@@ -139,6 +136,17 @@ func initRoutes(router *gin.Engine) {
 		r.GET("/switch", handleAccountSwitch)
 		r.GET("/password", handleChangePassword)
 		r.POST("/password", handleChangePasswordAttempt)
+	}
+
+	// Technician todo list
+	r = router.Group("/todo/", session.Permissions(&Sessions, Database, data.CapAllBooking, true))
+	{
+		r.GET("/", handleTodo)
+
+		r.GET("/unread/:id", handleTodoUnread)
+		r.GET("/progress/:id", handleTodoProgress)
+		r.GET("/done/:id", handleTodoDone)
+		r.GET("/reject/:id", handleTodoReject)
 	}
 
 	r = router.Group("/inventory/", session.Permissions(&Sessions, Database, data.CapManageInventory, true))
