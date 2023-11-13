@@ -5,7 +5,7 @@
 	<div class="modal-dialog modal-xl">
 		<div class="modal-content">
 			<div class="modal-header">
-				<h1 class="modal-title fs-5">Booking of {{.Activity.Title}} ({{.StartTime.Format "15:04"}}-{{.EndTime.Format "15:04"}})</h1>
+				<h1 class="modal-title fs-5">Booking of {{.Activity.Title}} ({{.StartTime.Format "02/01/06"}} from {{.StartTime.Format "15:04"}}-{{.EndTime.Format "15:04"}})</h1>
 				<button type="button" class="btn-close" data-bs-dismiss="modal"></button>
 			</div>
 			<div class="modal-body">
@@ -56,7 +56,7 @@
 		<link rel="stylesheet" href="/assets/todo.css" />
 	</head>
 
-	<body class="vh-100 overflow-x-hidden">
+	<body class="vh-100 overflow-x-hidden" onload="onload()">
 		{{template "dashnav.gohtml" .}}
 
 		<template id="toast_template">
@@ -71,6 +71,8 @@
 			</div>
 		</template>
 
+		<div id="notification_area" class="toast-container position-fixed bottom-0 end-0 p-3"></div>
+
 		<div class="mt-3 list-container overflow-hidden">
 			<div class="row h-100 flex-nowrap list-row mx-0">
 				<div class="col h-100">
@@ -84,7 +86,7 @@
 								<div class="card" style="width: 100%;">
 									<div class="card-body">
 										<h5 class="card-title">{{.Activity.Title}}</h5>
-										<h6 class="card-subtitle mb-2 text-body-secondary">{{.Owner.Username}} - {{.StartTime.Format "15:04"}} - {{.Location}}</h6>
+										<h6 class="card-subtitle mb-2 text-body-secondary">{{.Owner.Username}} - {{.StartTime.Format "02/01/06"}} - {{.StartTime.Format "15:04"}} - {{.Location}}</h6>
 
 										<div class="w-100 d-flex flex-row justify-content-between">
 											<a href="#" class="card-link" data-bs-toggle="modal" data-bs-target="#modal-{{.ID}}">Details</a>

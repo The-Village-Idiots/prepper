@@ -3,6 +3,7 @@ package notifications
 import (
 	"errors"
 	"fmt"
+	"log"
 	"sync"
 	"time"
 )
@@ -66,6 +67,8 @@ func (s *Store) PopUser(user uint) (Notification, error) {
 // queue. If the user has no queue yet, one will be fabricated. The new length
 // of the user's queue is returned.
 func (s *Store) PushUser(user uint, not Notification) int {
+	log.Println("Notification for UID", user, ":", not)
+
 	s.Lock()
 	defer s.Unlock()
 
