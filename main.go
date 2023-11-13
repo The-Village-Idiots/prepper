@@ -277,7 +277,6 @@ func main() {
 			"Start time:", ts, "\n",
 			"Predicted End Time:", fend.Format(time.RFC1123),
 		)
-
 	}))
 	MSched = maintenance.Scheduler{
 		// TODO: add config variable for this
