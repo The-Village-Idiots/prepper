@@ -242,7 +242,7 @@ func GetPersonalBookingsRange(db *gorm.DB, uid uint, start, end time.Time) ([]Bo
 func GetBookingsStatus(db *gorm.DB, status BookingStatus) ([]Booking, error) {
 	b := make([]Booking, 0, 5)
 	res := db.Model(&Booking{}).Joins("Activity").Joins("Owner").
-		Where(&Booking{Status: status}).
+		Where("Status", status).
 		Find(&b)
 
 	if err := res.Error; err != nil {
