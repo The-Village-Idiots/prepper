@@ -84,6 +84,24 @@ func (a Activity) Clone(db *gorm.DB, owner uint, extras []EquipmentSet) (Activit
 	return act, nil
 }
 
+// Special returns true if this activity:
+//
+//	a) Is the child of another activity
+//	b) Has extra items added by the user as special requests
+func (a Activity) Special() bool {
+	if !a.Temporary {
+		return false
+	}
+
+	for _, i := range a.Equipment {
+		if !i.Important {
+			return true
+		}
+	}
+
+	return false
+}
+
 // TotalQuantity returns the total quantity of items requisitioned for this
 // activity by summing that of the individual equipment sets.
 func (a Activity) TotalQuantity() uint {

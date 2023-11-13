@@ -1,16 +1,48 @@
 <!DOCTYPE html>
 
+{{define "tmodal"}}
+<div class="modal" id="modal-{{.ID}}" tabindex="-1" aria-hidden="true">
+	<div class="modal-dialog modal-xl">
+		<div class="modal-content">
+			<div class="modal-header">
+				<h1 class="modal-title fs-5">Booking of {{.Activity.Title}} ({{.StartTime.Format "15:04"}}-{{.EndTime.Format "15:04"}})</h1>
+				<button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+			</div>
+			<div class="modal-body">
+			</div>
+			<div class="modal-footer flex justify-content-between">
+				<p>Booking for {{.Owner.DisplayName}} - {{.Owner.Username}}</p>
+				<button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+			</div>
+		</div>
+	</div>
+</div>
+{{end}}
+
 <html>
 	<head>
 		{{template "head.gohtml" "Tasks Todo"}}
 
+		<script src="/assets/scripts/dashboard.js"></script>
 		<link rel="stylesheet" href="/assets/todo.css" />
 	</head>
 
 	<body class="vh-100 overflow-x-hidden">
 		{{template "dashnav.gohtml" .}}
 
-		<div class="mt-3 h-100 list-container overflow-hidden">
+		<template id="toast_template">
+			<div class="toast show tex-bg-primary" role="alert" id="new-notification">
+				<div class="toast-header">
+					<strong class="me-auto toast-title">Bootstrap</strong>
+					<small class="text-body-secondary toast-timing">just now</small>
+					<button type="button" class="btn-close" data-bs-dismiss="toast"></button>
+				</div>
+				<div class="toast-body">
+				</div>
+			</div>
+		</template>
+
+		<div class="mt-3 list-container overflow-hidden">
 			<div class="row h-100 flex-nowrap list-row mx-0">
 				<div class="col h-100">
 					<div class="card h-100 w-100 list-card">
@@ -19,21 +51,36 @@
 						</div>
 
 						<div class="card-body">
-							<p>
+							{{range .Pending}}
+								<div class="card" style="width: 100%;">
+									<div class="card-body">
+										<h5 class="card-title">{{.Activity.Title}}</h5>
+										<h6 class="card-subtitle mb-2 text-body-secondary">{{.Owner.Username}} - {{.StartTime.Format "15:04"}} - {{.Location}}</h6>
 
-Lorem ipsum dolor sit amet, consectetur adipiscing elit. Donec faucibus tortor et accumsan euismod. Nulla facilisi. Aliquam eu pharetra justo. Nam non tincidunt libero. Ut tortor eros, commodo sit amet vehicula eget, pretium tristique eros. Suspendisse varius nisi non viverra scelerisque. Etiam dictum libero ipsum, quis pellentesque turpis commodo in. Vivamus nec elit vitae arcu accumsan blandit ac quis quam. Donec et risus quis dui dignissim ornare. Sed efficitur blandit dui, eu blandit nisl placerat vitae. Morbi pharetra pretium elit, at ullamcorper justo euismod quis.
+										<div class="w-100 d-flex flex-row justify-content-between">
+											<a href="#" class="card-link" data-bs-toggle="modal" data-bs-target="#modal-{{.ID}}">Details</a>
 
-Praesent imperdiet aliquet nisi. Nulla eros velit, iaculis ac ante in, sodales tristique dolor. Morbi tempor nunc non est sagittis porttitor. Curabitur semper orci id ante egestas lacinia. Fusce vel molestie ipsum. Integer pretium arcu at accumsan consequat. Suspendisse ornare maximus diam, et suscipit metus consectetur et. Aenean in porta felis. Donec blandit nisi erat, ut molestie tortor molestie sit amet. Integer hendrerit posuere nisl, sed venenatis enim pellentesque quis. Sed nec metus sed odio malesuada condimentum.
+											<div class="btn-group">
+												<a class="btn btn-sm btn-danger">
+													<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-trash3" viewBox="0 0 16 16">
+														<path d="M6.5 1h3a.5.5 0 0 1 .5.5v1H6v-1a.5.5 0 0 1 .5-.5ZM11 2.5v-1A1.5 1.5 0 0 0 9.5 0h-3A1.5 1.5 0 0 0 5 1.5v1H2.506a.58.58 0 0 0-.01 0H1.5a.5.5 0 0 0 0 1h.538l.853 10.66A2 2 0 0 0 4.885 16h6.23a2 2 0 0 0 1.994-1.84l.853-10.66h.538a.5.5 0 0 0 0-1h-.995a.59.59 0 0 0-.01 0H11Zm1.958 1-.846 10.58a1 1 0 0 1-.997.92h-6.23a1 1 0 0 1-.997-.92L3.042 3.5h9.916Zm-7.487 1a.5.5 0 0 1 .528.47l.5 8.5a.5.5 0 0 1-.998.06L5 5.03a.5.5 0 0 1 .47-.53Zm5.058 0a.5.5 0 0 1 .47.53l-.5 8.5a.5.5 0 1 1-.998-.06l.5-8.5a.5.5 0 0 1 .528-.47ZM8 4.5a.5.5 0 0 1 .5.5v8.5a.5.5 0 0 1-1 0V5a.5.5 0 0 1 .5-.5Z"/>
+													</svg>
+												</a>
 
-Sed erat dolor, dignissim in efficitur vitae, ullamcorper at nisl. Proin a tempus nibh. Sed varius turpis at nisi vehicula convallis. Vivamus in lobortis risus. Integer porta nulla nec orci laoreet aliquet. Nulla ut ante id metus finibus feugiat ac nec tortor. In vitae tellus euismod, finibus erat eget, lobortis arcu. Sed ligula felis, tristique eleifend aliquet eget, tincidunt nec lectus. Integer urna diam, ultricies viverra posuere ac, maximus ut ante. Praesent pulvinar feugiat congue. Proin dapibus est quis orci porttitor, eu imperdiet augue volutpat. Vivamus fringilla lectus ex, sed posuere nibh gravida quis. Praesent nulla eros, dapibus varius lorem eget, rutrum elementum ante. Morbi hendrerit lorem dui, ut viverra dui efficitur eget.
+												<a class="btn btn-sm btn-primary">
+													<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-arrow-right" viewBox="0 0 16 16">
+														<path fill-rule="evenodd" d="M1 8a.5.5 0 0 1 .5-.5h11.793l-3.147-3.146a.5.5 0 0 1 .708-.708l4 4a.5.5 0 0 1 0 .708l-4 4a.5.5 0 0 1-.708-.708L13.293 8.5H1.5A.5.5 0 0 1 1 8z"/>
+													</svg>
+												</a>
+											</div>
+										</div>
+									</div>
+								</div>
 
-Aenean dui lorem, pretium in ipsum id, euismod aliquet tellus. Ut et efficitur elit. Aliquam fringilla sagittis augue eget pulvinar. Mauris ac dolor nec dui lobortis finibus id sit amet augue. Integer consequat condimentum mi sit amet sagittis. Nunc quis ligula eu erat eleifend lacinia. Pellentesque varius, nisl non ullamcorper mollis, ante leo tempor erat, at porta est risus id ipsum. Fusce tincidunt massa turpis, vitae gravida urna euismod sed. Proin tristique, erat a iaculis suscipit, ante lectus tincidunt velit, condimentum tincidunt justo nisl vitae lectus. Pellentesque habitant morbi tristique senectus et netus et malesuada fames ac turpis egestas. Maecenas pulvinar pellentesque nisi, at iaculis eros volutpat auctor. Integer non faucibus diam. Duis elementum semper pretium. Curabitur tempus neque et metus elementum, nec viverra est ultricies. Nulla ullamcorper risus a consectetur rhoncus. Nullam volutpat quam et arcu molestie, id scelerisque neque suscipit.
+								{{template "tmodal" .}}
+							{{end}}
 
-Maecenas ultrices leo vitae rutrum dapibus. Curabitur mauris ipsum, viverra ac lacus eget, sagittis porttitor nisi. Proin efficitur dui at massa eleifend sodales. Quisque vel mi ligula. Nulla facilisi. Ut commodo fermentum arcu. Quisque nulla leo, molestie sed nulla in, mattis faucibus purus. Morbi at lectus a magna mattis lacinia. Ut varius mollis neque, eget suscipit metus gravida nec. Integer eleifend elit vel dolor eleifend, vel aliquam mauris porta. Cras sit amet dui ipsum. </p>
-						</div>
-
-						<div class="card-footer">
-							<strong>Total:</strong>
+							{{if eq 0 (len .Pending)}}<p class="text-center text-secondary">All Clear</p>{{end}}
 						</div>
 					</div>
 				</div>
@@ -45,45 +92,111 @@ Maecenas ultrices leo vitae rutrum dapibus. Curabitur mauris ipsum, viverra ac l
 						</div>
 
 						<div class="card-body">
-						</div>
+							{{range .Progress}}
+								<div class="card border-primary" style="width: 100%;">
+									<div class="card-body">
+										<h5 class="card-title">{{.Activity.Title}}</h5>
+										<h6 class="card-subtitle mb-2 text-body-secondary">{{.Owner.Username}} - {{.StartTime.Format "15:04"}} - {{.Location}}</h6>
 
-						<div class="card-footer">
-							<strong>Total:</strong>
+										<div class="w-100 d-flex flex-row justify-content-between">
+											<a href="#" class="card-link" data-bs-toggle="modal" data-bs-target="#modal-{{.ID}}">Details</a>
+
+											<div class="btn-group">
+												<a class="btn btn-sm btn-primary">
+													<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-arrow-left" viewBox="0 0 16 16">
+														<path fill-rule="evenodd" d="M15 8a.5.5 0 0 0-.5-.5H2.707l3.147-3.146a.5.5 0 1 0-.708-.708l-4 4a.5.5 0 0 0 0 .708l4 4a.5.5 0 0 0 .708-.708L2.707 8.5H14.5A.5.5 0 0 0 15 8z"/>
+													</svg>
+												</a>
+												<a class="btn btn-sm btn-success">
+													<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-check2" viewBox="0 0 16 16">
+														<path d="M13.854 3.646a.5.5 0 0 1 0 .708l-7 7a.5.5 0 0 1-.708 0l-3.5-3.5a.5.5 0 1 1 .708-.708L6.5 10.293l6.646-6.647a.5.5 0 0 1 .708 0z"/>
+													</svg>
+												</a>
+												<a class="btn btn-sm btn-danger">
+													<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-trash3" viewBox="0 0 16 16">
+														<path d="M6.5 1h3a.5.5 0 0 1 .5.5v1H6v-1a.5.5 0 0 1 .5-.5ZM11 2.5v-1A1.5 1.5 0 0 0 9.5 0h-3A1.5 1.5 0 0 0 5 1.5v1H2.506a.58.58 0 0 0-.01 0H1.5a.5.5 0 0 0 0 1h.538l.853 10.66A2 2 0 0 0 4.885 16h6.23a2 2 0 0 0 1.994-1.84l.853-10.66h.538a.5.5 0 0 0 0-1h-.995a.59.59 0 0 0-.01 0H11Zm1.958 1-.846 10.58a1 1 0 0 1-.997.92h-6.23a1 1 0 0 1-.997-.92L3.042 3.5h9.916Zm-7.487 1a.5.5 0 0 1 .528.47l.5 8.5a.5.5 0 0 1-.998.06L5 5.03a.5.5 0 0 1 .47-.53Zm5.058 0a.5.5 0 0 1 .47.53l-.5 8.5a.5.5 0 1 1-.998-.06l.5-8.5a.5.5 0 0 1 .528-.47ZM8 4.5a.5.5 0 0 1 .5.5v8.5a.5.5 0 0 1-1 0V5a.5.5 0 0 1 .5-.5Z"/>
+													</svg>
+												</a>
+											</div>
+										</div>
+									</div>
+								</div>
+
+								{{template "tmodal" .}}
+							{{end}}
+
+							{{if eq 0 (len .Progress)}}<p class="text-center text-secondary">All Clear</p>{{end}}
 						</div>
 					</div>
 				</div>
 
 				<div class="col h-100">
-					<div class="row half-height">
-						<div class="col">
-							<div class="card h-100 list-card">
-								<div class="card-header">
-									<h5>Done</h5>
-								</div>
+					<div class="half-height">
+						<div class="card h-100 list-card">
+							<div class="card-header">
+								<h5>Done</h5>
+							</div>
 
-								<div class="card-body">
-								</div>
+							<div class="card-body">
+								{{range .Done}}
+									<div class="card border-success" style="width: 100%;">
+										<div class="card-body">
+											<h5 class="card-title">{{.Activity.Title}}</h5>
+											<h6 class="card-subtitle mb-2 text-body-secondary">{{.Owner.Username}} - {{.StartTime.Format "15:04"}} - {{.Location}}</h6>
 
-								<div class="card-footer">
-									<strong>Total:</strong>
-								</div>
+											<div class="w-100 d-flex flex-row justify-content-between">
+												<a href="#" class="card-link" data-bs-toggle="modal" data-bs-target="#modal-{{.ID}}">Details</a>
+
+												<div class="btn-group">
+													<a class="btn btn-sm btn-primary">
+														<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-arrow-left" viewBox="0 0 16 16">
+															<path fill-rule="evenodd" d="M15 8a.5.5 0 0 0-.5-.5H2.707l3.147-3.146a.5.5 0 1 0-.708-.708l-4 4a.5.5 0 0 0 0 .708l4 4a.5.5 0 0 0 .708-.708L2.707 8.5H14.5A.5.5 0 0 0 15 8z"/>
+														</svg>
+													</a>
+												</div>
+											</div>
+										</div>
+									</div>
+
+									{{template "tmodal" .}}
+								{{end}}
+
+								{{if eq 0 (len .Done)}}<p class="text-center text-secondary">All Clear</p>{{end}}
 							</div>
 						</div>
 					</div>
 
-					<div class="row half-height mt-1">
-						<div class="col">
-							<div class="card h-100 list-card">
-								<div class="card-header">
-									<h5>Rejected</h5>
-								</div>
+					<div class="half-height mt-1">
+						<div class="card h-100 list-card">
+							<div class="card-header">
+								<h5>Rejected</h5>
+							</div>
 
-								<div class="card-body">
-								</div>
+							<div class="card-body">
+								{{range .Rejected}}
+									<div class="card border-danger" style="width: 100%;">
+										<div class="card-body">
+											<h5 class="card-title">{{.Activity.Title}}</h5>
+											<h6 class="card-subtitle mb-2 text-body-secondary">{{.Owner.Username}} - {{.StartTime.Format "15:04"}} - {{.Location}}</h6>
 
-								<div class="card-footer">
-									<strong>Total:</strong>
-								</div>
+											<div class="w-100 d-flex flex-row justify-content-between">
+												<a href="#" class="card-link" data-bs-toggle="modal" data-bs-target="#modal-{{.ID}}">Details</a>
+
+												<div class="btn-group">
+													<a class="btn btn-sm btn-primary">
+														<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-arrow-left" viewBox="0 0 16 16">
+															<path fill-rule="evenodd" d="M15 8a.5.5 0 0 0-.5-.5H2.707l3.147-3.146a.5.5 0 1 0-.708-.708l-4 4a.5.5 0 0 0 0 .708l4 4a.5.5 0 0 0 .708-.708L2.707 8.5H14.5A.5.5 0 0 0 15 8z"/>
+														</svg>
+													</a>
+												</div>
+											</div>
+										</div>
+									</div>
+
+									{{template "tmodal" .}}
+								{{end}}
+
+								{{if eq 0 (len .Rejected)}}<p class="text-center text-secondary">All Clear</p>{{end}}
 							</div>
 						</div>
 					</div>

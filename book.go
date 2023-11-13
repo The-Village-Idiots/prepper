@@ -402,7 +402,7 @@ func handleBookSubmission(c *gin.Context) {
 		for _, u := range urs {
 			Notifications.PushUser(u.ID, notifications.Notification{
 				Title:  fmt.Sprint("New Booking for ", usr.DisplayName(), " (", usr.Username, ")"),
-				Body:   fmt.Sprintln(usr.DisplayName(), "booked", act.Title, "for", bk.StartTime.Format(time.Kitchen), "-", bk.EndTime.Format(time.Kitchen)),
+				Body:   fmt.Sprintln(usr.DisplayName(), "booked", act.Title, "for", bk.StartTime.Format(time.Kitchen), "-", bk.EndTime.Format(time.Kitchen)+".", "Reload to view."),
 				Type:   notifications.TypeImportant,
 				Action: "/tasks/",
 				Time:   time.Now(),

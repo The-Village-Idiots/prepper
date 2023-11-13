@@ -6,12 +6,15 @@
 
 .list-container {
 	margin: 0px !important;
-	margin-left: 10px !important;
 	margin-top: 10px !important;
 	padding: 0px !important;
 
 	width: 100% !important;
 	min-width: 100% !important;
+
+	height: calc(100% - 66px);
+	min-height: calc(100% - 66px);
+	max-height calc(100% - 66px);
 
 	overflow-x: scroll !important;
 	overflow-y: hidden !important;
@@ -28,5 +31,5 @@
 }
 
 .card-body {
-	overflow-y: scroll;
+	overflow-y: scroll !important;
 }
