@@ -9,6 +9,35 @@
 				<button type="button" class="btn-close" data-bs-dismiss="modal"></button>
 			</div>
 			<div class="modal-body">
+				<p>
+					For this activity, a total of <strong>{{len .Activity.Equipment}}</strong> items have been booked
+					for a total requisitioned quantity of <strong>{{.Activity.TotalQuantity}}</strong>.
+				</p>
+				<table class="table table-striped">
+					<thead>
+						<tr>
+							<th scope="col">Name</th>
+							<th scope="col">Quantity</th>
+							<th scope="col">Important</th>
+						</tr>
+					</thead>
+
+					<tbody>
+						{{range .Activity.Equipment}}
+							<tr>
+								<td>{{.Item.Name}}</td>
+								<td>{{.Quantity}}</td>
+								<td>
+									{{if .Important}}
+										<span class="text-danger">Yes</span>
+									{{else}}
+										<span class="text-secondary">No</span>
+									{{end}}
+								</td>
+							</tr>
+						{{end}}
+					</tbody>
+				</table>
 			</div>
 			<div class="modal-footer flex justify-content-between">
 				<p>Booking for {{.Owner.DisplayName}} - {{.Owner.Username}}</p>

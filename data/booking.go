@@ -243,6 +243,8 @@ func GetBookingsStatus(db *gorm.DB, status BookingStatus) ([]Booking, error) {
 	b := make([]Booking, 0, 5)
 	res := db.Model(&Booking{}).Joins("Activity").Joins("Owner").
 		Where("Status", status).
+		Preload("Activity.Equipment").
+		Preload("Activity.Equipment.Item").
 		Find(&b)
 
 	if err := res.Error; err != nil {
