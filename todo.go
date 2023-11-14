@@ -1,10 +1,13 @@
 package main
 
 import (
+	"fmt"
 	"net/http"
 	"strconv"
+	"time"
 
 	"github.com/ejv2/prepper/data"
+	"github.com/ejv2/prepper/notifications"
 	"github.com/gin-gonic/gin"
 )
 
@@ -56,6 +59,13 @@ func handleTodo(c *gin.Context) {
 // handleSetStatus handles promoting the status of a booking given as a URI
 // parameter. If there was an error, false is returned, else true.
 func handleSetStatus(status data.BookingStatus, c *gin.Context) bool {
+	s := Sessions.Start(c)
+	usr, err := data.GetUser(Database, s.UserID)
+	if err != nil {
+		internalError(c, err)
+		return false
+	}
+
 	sid := c.Param("id")
 	lid, err := strconv.ParseUint(sid, 10, 32)
 	id := uint(lid)
@@ -75,6 +85,14 @@ func handleSetStatus(status data.BookingStatus, c *gin.Context) bool {
 		internalError(c, err)
 		return false
 	}
+
+	Notifications.PushUser(bk.OwnerID, notifications.Notification{
+		Title:  "Booking Status Updated",
+		Body:   fmt.Sprintln(usr.DisplayName(), "has updated the status of your booking of", bk.Activity.Title, "for", bk.StartTime.Format(time.Kitchen)+".", "Its status is now:", bk.Status),
+		Action: fmt.Sprint("/book/booking/", bk.ID),
+		Time:   time.Now(),
+		Type:   notifications.TypeGeneric,
+	})
 
 	return true
 }
