@@ -217,6 +217,12 @@ func handleAPIEditItem(c *gin.Context) {
 
 	i, err := data.GetEquipmentItem(Database, id)
 	oldid := i.ID
+	if err != nil {
+		c.JSON(http.StatusNotFound, gin.H{
+			"error":   "Item Not Found",
+			"message": "Item " + strconv.FormatUint(uint64(id), 10) + " does not exist",
+		})
+	}
 
 	err = c.BindJSON(&i)
 	if err != nil {
