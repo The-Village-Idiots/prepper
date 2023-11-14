@@ -88,7 +88,7 @@ func handleSetStatus(status data.BookingStatus, c *gin.Context) bool {
 
 	Notifications.PushUser(bk.OwnerID, notifications.Notification{
 		Title:  "Booking Status Updated",
-		Body:   fmt.Sprintln(usr.DisplayName(), "has updated the status of your booking of", bk.Activity.Title, "for", bk.StartTime.Format(time.Kitchen)+".", "Its status is now:", bk.Status),
+		Body:   fmt.Sprintln(usr.DisplayName(), "has updated the status of your booking of", bk.Activity.Title, "for", bk.StartTime.Format("02/01/06 15:04")+".", "Its status is now:", bk.Status),
 		Action: fmt.Sprint("/book/booking/", bk.ID),
 		Time:   time.Now(),
 		Type:   notifications.TypeGeneric,
