@@ -238,11 +238,14 @@ func GetPersonalBookingsRange(db *gorm.DB, uid uint, start, end time.Time) ([]Bo
 	return b, nil
 }
 
-// GetBookingsStatus returns all bookings of the given status.
+// GetBookingsStatus returns all bookings of the given status. Bookings with
+// start time lower than the current time which have been marked as rejected or
+// completed are not returned.
 func GetBookingsStatus(db *gorm.DB, status BookingStatus) ([]Booking, error) {
 	b := make([]Booking, 0, 5)
 	res := db.Model(&Booking{}).Joins("Activity").Joins("Owner").
 		Where("Status", status).
+		Where("start_time > ? OR NOT (status = ? OR status = ?)", time.Now(), BookingStatusReady, BookingStatusRejected).
 		Preload("Activity.Equipment").
 		Preload("Activity.Equipment.Item").
 		Find(&b)
