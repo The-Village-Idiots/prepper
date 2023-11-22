@@ -283,3 +283,18 @@ func GetCurrentBooking(db *gorm.DB, uid uint) (Booking, error) {
 
 	return o[0], nil
 }
+
+// CleanBookings cleans out old bookings by marking them as deleted if they are
+// passed their expiry date.
+func CleanBookings(db *gorm.DB) (int64, error) {
+	t := time.Now()
+	res := db.Model(&Booking{}).
+		Where("start_time < ? AND end_time < ?", t, t).
+		Delete(&Booking{})
+
+	if err := res.Error; err != nil {
+		return res.RowsAffected, fmt.Errorf("clean bookings: sql error: %w", err)
+	}
+
+	return res.RowsAffected, nil
+}

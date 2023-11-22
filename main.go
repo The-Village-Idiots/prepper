@@ -106,6 +106,15 @@ func initDatabase(c conf.Config) (err error) {
 	return nil
 }
 
+func cleanBookings() error {
+	n, err := data.CleanBookings(Database)
+	if err != nil {
+		return err
+	}
+	log.Println("Cleaned", n, "outdated bookings")
+	return nil
+}
+
 func initRoutes(router *gin.Engine) {
 	// Static assets path
 	router.Static("/assets/", "frontend/static")
@@ -193,6 +202,7 @@ func initRoutes(router *gin.Engine) {
 		r.GET("/logs", handleAdminLogs)
 		r.GET("/error", handleAdminError)
 		r.GET("/maintenance", handleAdminMaintenance)
+		r.GET("/runnow", handleAdminRunMaint)
 	}
 }
 
@@ -291,9 +301,7 @@ func main() {
 		Interval: &maintenance.StandardInterval,
 		Manager:  &Maintenance,
 		Handlers: []func() error{
-			func() error { log.Println("[MAINTENANCE] Routine maintenance begins"); return nil },
-			// TODO: Place maintenance tasks between here
-			func() error { log.Println("[MAINTENANCE] Routine maintenance ends"); return nil },
+			cleanBookings,
 		},
 		Ctx: ctx,
 		Err: mterr,

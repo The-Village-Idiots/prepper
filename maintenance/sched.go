@@ -76,3 +76,9 @@ func (s Scheduler) Run() {
 		}
 	}
 }
+
+// Now triggers a maintenance period now. This method is thread safe and
+// performs maintenance on the calling request thread.
+func (s Scheduler) Now() {
+	s.do()
+}

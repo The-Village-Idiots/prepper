@@ -50,3 +50,11 @@ func handleAdminMaintenance(c *gin.Context) {
 	log.Println(c.RemoteIP(), "enables maintenance mode from admin panel")
 	c.String(http.StatusOK, "Maintenance mode enabled by system administrator.\nTimestamp: %v", time.Now().Format(time.RFC1123))
 }
+
+// handleAdminRunMaint is the handler for "/admin/runnow".
+//
+// Runs admin maintenance tasks now!
+func handleAdminRunMaint(c *gin.Context) {
+	MSched.Now()
+	c.Redirect(http.StatusFound, "/admin/")
+}
