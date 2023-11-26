@@ -203,7 +203,7 @@ func (a Activity) Parent(db *gorm.DB) Activity {
 // EquipmentSet is the link table for equipment used in an activity.
 type EquipmentSet struct {
 	*gorm.Model
-	ActivityID uint `gorm:"constraint:OnUpdate:CASCADE,OnDelete:CASCADE;"`
+	ActivityID uint
 
 	// Quantity requisitioned for this activity.
 	Quantity uint
@@ -212,7 +212,7 @@ type EquipmentSet struct {
 	Important bool
 
 	ItemID uint
-	Item   EquipmentItem `gorm:"constraint:OnUpdate:CASCADE,OnDelete:CASCADE;"`
+	Item   EquipmentItem
 }
 
 // VisualIndex is very useless in Go, but very useful in Go templates where
