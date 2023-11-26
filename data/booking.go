@@ -113,6 +113,33 @@ func (b Booking) Ongoing() bool {
 		(b.StartTime.After(t) && b.StartTime.Before(te))
 }
 
+// Delete removes this booking from the database, along with its temporary
+// activity and temporary activity's equipment set. If an error occurs at any
+// stage in deletion, the transaction is rolled back and no data is modified.
+func (b Booking) Delete(db *gorm.DB) error {
+	return db.Transaction(func(tx *gorm.DB) error {
+		res := tx.Model(&b).Where("ID = ?", b.ID).Delete(&b)
+		if err := res.Error; err != nil {
+			return fmt.Errorf("delete booking #%d: sql error: %w", b.ID, err)
+		}
+
+		// Little sanity check to avoid deleting proper activities by accident.
+		if b.Activity.Temporary {
+			res = tx.Model(&Activity{}).Where("ID = ?", b.ActivityID).Delete(&b.Activity)
+			if err := res.Error; err != nil {
+				return fmt.Errorf("delete booking #%d: delete activity %d: sql error: %w", b.ID, b.ActivityID, err)
+			}
+
+			res = tx.Model(&EquipmentSet{}).Where("activity_id = ?", b.ActivityID).Delete(&b.Activity.Equipment)
+			if err := res.Error; err != nil {
+				return fmt.Errorf("delete booking #%d: delete equip set %d: sql error: %w", b.ID, b.ActivityID, err)
+			}
+		}
+
+		return nil
+	})
+}
+
 // NewBooking inserts a new booking from the specified activity into the
 // database. The owner is taken to be the owner of act. If act is not yet a
 // temporary activity, an error is returned. Else, all errors returned will be
@@ -285,16 +312,39 @@ func GetCurrentBooking(db *gorm.DB, uid uint) (Booking, error) {
 }
 
 // CleanBookings cleans out old bookings by marking them as deleted if they are
-// passed their expiry date.
+// passed their expiry date. CleanBookings processes any bookings in batches of
+// 10 at a time to avoid very large responses from the server.
 func CleanBookings(db *gorm.DB) (int64, error) {
 	t := time.Now()
-	res := db.Model(&Booking{}).
-		Where("start_time < ? AND end_time < ?", t, t).
-		Delete(&Booking{})
+	count := int64(0)
+	cerr := CumulativeError{}
 
-	if err := res.Error; err != nil {
-		return res.RowsAffected, fmt.Errorf("clean bookings: sql error: %w", err)
+	bk := make([]Booking, 0, 10)
+	for {
+		res := db.Model(&Booking{}).
+			Joins("Activity").
+			Where("start_time < ? AND end_time < ?", t, t).
+			Limit(10).
+			Find(&bk)
+
+		if err := res.Error; err != nil {
+			return res.RowsAffected, fmt.Errorf("clean bookings: find sql error: %w", err)
+		}
+
+		for _, b := range bk {
+			err := b.Delete(db)
+			if err != nil {
+				cerr.Push(fmt.Errorf("clean bookings: %w", err))
+			}
+		}
+		count += int64(len(bk))
+
+		// Break when less than the quota returned (i.e, likely no more to return)
+		// Done to avoid unneeded round-trip with no results.
+		if len(bk) < 10 {
+			break
+		}
 	}
 
-	return res.RowsAffected, nil
+	return count, cerr.Return()
 }
