@@ -115,6 +115,10 @@ func cleanBookings() error {
 	return nil
 }
 
+func cleanDeleted() error {
+	return data.CleanDeleted(Database)
+}
+
 func initRoutes(router *gin.Engine) {
 	// Static assets path
 	router.Static("/assets/", "frontend/static")
@@ -302,14 +306,15 @@ func main() {
 		Manager:  &Maintenance,
 		Handlers: []func() error{
 			cleanBookings,
+			cleanDeleted,
 		},
 		Ctx: ctx,
 		Err: mterr,
 	}
 	go MSched.Run()
 	go func() {
-		for err := range mterr {
-			log.Println("[MAINTENANCE ERROR]", err)
+		for {
+			log.Println("[MAINTENANCE ERROR]", <-mterr)
 		}
 	}()
 
