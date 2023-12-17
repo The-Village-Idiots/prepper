@@ -267,6 +267,14 @@ func handleAPIDashboard(c *gin.Context) {
 	s := Sessions.Start(c)
 	defer s.Update()
 
+	if !s.SignedIn {
+		c.JSON(http.StatusForbidden, gin.H{
+			"error":   "Access Denied",
+			"message": "Please authenticate first",
+		})
+		return
+	}
+
 	// Pull out maximum of 5 notifications, or the length of the queue (whichever is lower)
 	a := make([]formattedNotification, 0, 5)
 	for i := 0; i < 5; i++ {
