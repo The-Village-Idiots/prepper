@@ -24,6 +24,8 @@ type Config struct {
 
 	Database Database     `json:"database"`
 	ISAMS    *ISAMSConfig `json:"isams"`
+
+	TimetableLayout *TimetableLayout `json:"timetable_layout"`
 }
 
 // NewConfig parses a JSON config file from the file at path.
@@ -42,6 +44,11 @@ func NewConfig(path string) (Config, error) {
 	c := Config{Validate: validator.New()}
 	if err := json.Unmarshal([]byte(b), &c); err != nil {
 		return c, fmt.Errorf("parse config: %w", err)
+	}
+
+	// Allow for nil period to be used.
+	if c.TimetableLayout == nil {
+		c.TimetableLayout = &TimetableLayout{nil}
 	}
 
 	if err := c.Struct(c); err != nil {
