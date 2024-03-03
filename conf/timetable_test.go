@@ -7,7 +7,7 @@ import (
 	"github.com/ejv2/prepper/conf"
 )
 
-const ConfigPath = "./testdata/config.json"
+const ConfigPath = "./testdata/timetable.json"
 
 var Config conf.Config
 
