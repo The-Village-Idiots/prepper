@@ -1,2 +1,3 @@
 prepper
 config.json
+!conf/testdata/*
