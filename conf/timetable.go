@@ -60,14 +60,16 @@ func (p *Period) Within(t time.Time) bool {
 		return true
 	}
 
-	tw := time.Date(0, 0, 0, t.Hour(), t.Minute(), t.Second(), 0, t.Location())
-	return tw.After(time.Time(p.Start)) && tw.Before(time.Time(p.End))
+	tw := time.Date(0, 1, 1, t.Hour(), t.Minute(), t.Second(), 0, t.Location())
+	return (tw.After(time.Time(p.Start)) && tw.Before(time.Time(p.End))) ||
+		(tw == time.Time(p.Start)) ||
+		(tw == time.Time(p.End))
 }
 
 // Compare returns 1 if t lies after this period, -1 if before and zero if
 // within.
 func (p *Period) Compare(t time.Time) int {
-	if p == nil {
+	if p == nil || p.Within(t) {
 		return 0
 	}
 
