@@ -9,13 +9,28 @@
 		{{template "dashnav.gohtml" .}}
 
 		<div class="container container-fluid mt-3">
+			{{- if .NoAmend -}}
+				<div class="alert alert-danger">
+					<strong>Short Notice Amendment</strong>
+					You may not amend this booking.
+					Bookings may only be amended one hour before their booked time and before the technician has marked them as complete.
+					{{if eq .User.ID .Booking.OwnerID -}}
+						<br>
+						<br>
+						You may still <a class="text-danger" href="/book/booking/{{.Booking.ID}}/cancel">cancel the booking</a>.
+					{{- end -}}
+				</div>
+			{{- end -}}
+
+
 			<h1>Booking Ticket #{{.Booking.ID}}</h1>
 			<hr>
 
 			<div class="mt-2">
 				<p>
 					Below is a short summary of your booking request as recieved by a technician.
-					If there is a mistake, please create a new booking having corrected the error and cancel this one.
+					You may edit your booking up to 1 hour before its scheduled time, or until the technician has marked it as complete.
+					You may cancel your booking at any time.
 				</p>
 				<hr>
 
@@ -48,13 +63,13 @@
 					</div>
 
 					<div class="col-lg p-4">
-						<p>Booking End Date {{.Booking.EndTime}}</p>
+						<p>Booking End Date: {{.Booking.EndTime}}</p>
 					</div>
 				</div>
 
 				<div class="row">
 					<div class="col-lg ps-4 pe-4">
-						<p>Booking Location {{.Booking.Location}}</p>
+						<p>Booking Location: {{.Booking.Location}}</p>
 					</div>
 				</div>
 
@@ -97,6 +112,10 @@
 					<a href="/book/">Re-Book Another Activity</a>
 					|
 					<a href="/book/{{.Activity.ID}}">Re-Book This Activity</a>
+					{{- if .Booking.MayAmend -}}
+					|
+					<a class="text-warning" href="/book/booking/{{.Booking.ID}}/amend">Amend This Booking</a>
+					{{- end -}}
 					|
 					<a class="text-danger" href="/book/booking/{{.Booking.ID}}/cancel">Cancel This Booking</a>
 					{{end}}

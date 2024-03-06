@@ -485,13 +485,106 @@ func handleBooking(c *gin.Context) {
 		return
 	}
 
+	_, noamend := c.GetQuery("noamend")
 	dat := struct {
 		DashboardData
 		Booking  data.Booking
 		Activity data.Activity
-	}{ddat, bk, bk.Activity.Parent(Database)}
+		NoAmend  bool
+	}{ddat, bk, bk.Activity.Parent(Database), noamend}
 
 	c.HTML(http.StatusOK, "booking.gohtml", dat)
+}
+
+// handleBookAmend is the handler for "/book/booking/[ID]/amend".
+//
+// Allows the creating user to amend a booking which they have created.
+func handleBookAmend(c *gin.Context) {
+	s := Sessions.Start(c)
+	defer s.Update()
+
+	ddat, err := NewDashboardData(s)
+	if err != nil {
+		internalError(c, err)
+		return
+	}
+
+	sid := c.Param("id")
+	lid, err := strconv.ParseUint(sid, 10, 32)
+	if err != nil {
+		c.String(http.StatusBadRequest, "Bad Booking ID")
+		return
+	}
+	id := uint(lid)
+
+	bk, err := data.GetBooking(Database, id)
+	if err != nil {
+		if errors.Is(err, data.ErrNoSuchBooking) {
+			c.String(http.StatusNotFound, "Booking Not Found")
+			return
+		}
+
+		internalError(c, err)
+		return
+	}
+
+	items, err := data.GetEquipment(Database)
+	if err != nil {
+		internalError(c, err)
+		return
+	}
+
+	if !bk.MayAmend() {
+		c.Redirect(http.StatusFound, fmt.Sprint("/book/booking/", bk.ID, "?noamend"))
+		return
+	}
+
+	dat := struct {
+		DashboardData
+		Booking   data.Booking
+		Activity  data.Activity
+		Equipment []data.EquipmentItem
+	}{ddat, bk, bk.Activity, items}
+
+	c.HTML(http.StatusOK, "booking-amend.gohtml", dat)
+}
+
+// handleBookDoAmend is the handler for POST "/book/booking/[ID]/amend".
+//
+// Is the form handler for the frontend returned from this endpoint.
+func handleBookDoAmend(c *gin.Context) {
+	s := Sessions.Start(c)
+	defer s.Update()
+
+	ddat, err := NewDashboardData(s)
+	if err != nil {
+		internalError(c, err)
+		return
+	}
+
+	sid := c.Param("id")
+	lid, err := strconv.ParseUint(sid, 10, 32)
+	if err != nil {
+		c.String(http.StatusBadRequest, "Bad Booking ID")
+		return
+	}
+	id := uint(lid)
+
+	bk, err := data.GetBooking(Database, id)
+	if err != nil {
+		if errors.Is(err, data.ErrNoSuchBooking) {
+			c.String(http.StatusNotFound, "Booking Not Found")
+			return
+		}
+
+		internalError(c, err)
+		return
+	}
+
+	if bk.OwnerID != s.UserID && !ddat.User.Can(data.CapAllBooking) {
+		c.String(http.StatusForbidden, "Permission Denied")
+		return
+	}
 }
 
 // handleBookCancel is the handler for "/book/booking/[ID]/cancel".

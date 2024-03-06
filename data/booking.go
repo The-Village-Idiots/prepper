@@ -113,6 +113,16 @@ func (b Booking) Ongoing() bool {
 		(b.StartTime.After(t) && b.StartTime.Before(te))
 }
 
+// MayAmend returns true if the required conditions for ammendments to be
+// submitted are met.
+//
+// Those requirements are:
+//   - The current time is more than 1 hour (60 minutes) before the scheduled start time.
+//   - The booking has not been marked as completed by the technician.
+func (b Booking) MayAmend() bool {
+	return (b.Status.Pending() || b.Status.Progress()) && time.Until(b.StartTime).Minutes() >= 60
+}
+
 // Delete removes this booking from the database, along with its temporary
 // activity and temporary activity's equipment set. If an error occurs at any
 // stage in deletion, the transaction is rolled back and no data is modified.

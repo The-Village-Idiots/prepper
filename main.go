@@ -183,6 +183,8 @@ func initRoutes(router *gin.Engine) {
 		r.GET("/success/:id", handleBookSuccess)
 
 		r.GET("/booking/:id", handleBooking)
+		r.GET("/booking/:id/amend", handleBookAmend)
+		r.POST("/booking/:id/amend", handleBookDoAmend)
 		r.GET("/booking/:id/cancel", handleBookCancel)
 	}
 

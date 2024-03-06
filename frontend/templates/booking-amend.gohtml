@@ -1,0 +1,86 @@
+<!DOCTYPE html>
+
+<html>
+	<head>
+		{{template "head.gohtml" (println "Amend Booking" .Booking.ID "for" .Activity.Title)}}
+
+		<script src="/assets/scripts/bookitems.js"></script>
+	</head>
+
+	<body>
+		{{template "dashnav.gohtml" .}}
+		{{template "add-items.gohtml" .}}
+
+		<div class="container container-fluid mt-3">
+			<h1>Booking Ticket #{{.Booking.ID}}</h1>
+			<hr>
+
+			<form class="mt-2" method="POST">
+				<p>
+					You are amending the booking for ticket <strong>#{{.Booking.ID}}</strong>.
+					{{if .Booking.Status.Progress}}
+						This booking was already in the process of preparation.
+						Your technician will be notified but, as a result, your booking may take longer to process.
+					{{end}}
+					
+					<br>
+					<br>
+					<a href="/book/booking/{{.Booking.ID}}">View Ticket</a>
+				</p>
+				<hr>
+
+				<h3>Booking Details</h3>
+
+				<h3>Equipment</h3>
+
+				<h4>Core Items</h4>
+
+				<table class="table table-striped">
+					<thead>
+						<tr>
+							<th scope="col">#</th>
+							<th scope="col">Name</th>
+							<th scope="col">Quantity</th>
+						</tr>
+					</thead>
+
+					<tbody>
+						{{range $i, $item := .Activity.Equipment}}
+							<tr>
+								<td>{{$item.VisualIndex $i}}</td>
+								<td>{{$item.Item.Name}}</td>
+								<td>
+									<input class="form-control" name="qty_{{$item.Item.ID}}" value="{{$item.Quantity}}" type="number" min="1" max="{{$item.Item.Quantity}}">
+								</td>
+							</tr>
+						{{end}}
+					</tbody>
+				</table>
+
+				<h4>Extra Items</h4>
+
+				<table class="table table-striped" id="extra_items">
+					<thead>
+						<tr>
+							<th scope="col">#</th>
+							<th scope="col">Name</th>
+							<th scope="col">Quantity</th>
+						</tr>
+					</thead>
+
+					<tbody id="extra_items_body">
+					</tbody>
+				</table>
+
+				<a href="#" onclick="add_item(event)">Add Extra Item</a>
+
+				<hr>
+
+				<div class="btn-group">
+					<button type="submit" class="btn btn-success">Save</button>
+					<a class="btn btn-secondary" href="/book/booking/{{.Booking.ID}}">Cancel</a>
+				</div>
+			</div>
+		</div>
+	</body>
+</html>
