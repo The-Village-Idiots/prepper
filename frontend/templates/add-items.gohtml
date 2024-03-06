@@ -1,0 +1,54 @@
+		<div class="modal fade text-dark" id="add_item_modal" tabindex="-1" role="dialog" data-keyboard="false" data-backdrop="static">
+			<div class="modal-dialog modal-lg modal-dialog-centered modal-dialog-scrollable" role="dialog">
+				<div class="modal-content">
+					<div class="modal-header">
+						<h6 class="modal-title">Select Item</h6>
+					</div>
+
+					<div class="modal-body">
+						<table class="table table-striped table-hover table-sm">
+							<thead>
+								<tr>
+									<th scope="col">#</th>
+									<th scope="col">Name</th>
+									<th scope="col">Available</th>
+									<th scope="col"></th>
+								</tr>
+							</thead>
+
+							<tbody>
+								{{range .Equipment}}
+									<tr>
+										<td>{{.ID}}</td>
+										<td>{{.Name}}</td>
+										<td>{{.Quantity}}</td>
+										<td>
+											<button class="btn btn-sm btn-success" onclick='do_add_item({{.ID}}, {{.Name}}, {{.Quantity}})'>
+												<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-plus-lg" viewBox="0 0 16 16">
+													<path fill-rule="evenodd" d="M8 2a.5.5 0 0 1 .5.5v5h5a.5.5 0 0 1 0 1h-5v5a.5.5 0 0 1-1 0v-5h-5a.5.5 0 0 1 0-1h5v-5A.5.5 0 0 1 8 2Z"/>
+												</svg>
+											</button>
+										</td>
+									</tr>
+								{{end}}
+							</tbody>
+						</table>
+
+						<div class="modal-footer">
+							<button class="btn btn-secondary" onclick="cancel_add_item()">Cancel</button>
+						</div>
+					</div>
+				</div>
+			</div>
+		</div>
+
+		<template id="extra_items_template">
+			<tr>
+				<td id="new_item_id"></td>
+				<td id="new_item_name"></td>
+				<td>
+					<!-- names distinguished using "eqty_" rather than "qty_" -->
+					<input class="form-control" name="eqty_ID" value="1" type="number" id="new_item_quantity" min="0" max="1">
+				</td>
+			</tr>
+		</template>
