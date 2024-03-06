@@ -1,5 +1,6 @@
 <!DOCTYPE html>
 
+{{$ttlayout := .Config.TimetableLayout}}
 {{define "tmodal"}}
 <div class="modal" id="modal-{{.ID}}" tabindex="-1" aria-hidden="true">
 	<div class="modal-dialog modal-xl">
@@ -12,6 +13,8 @@
 				<p>
 					For this activity, a total of <strong>{{len .Activity.Equipment}}</strong> items have been booked
 					for a total requisitioned quantity of <strong>{{.Activity.TotalQuantity}}</strong>.
+
+					This activity will take place in <strong>{{.Location}}</strong>.
 				</p>
 				<table class="table table-striped">
 					<thead>
@@ -40,7 +43,7 @@
 				</table>
 			</div>
 			<div class="modal-footer flex justify-content-between">
-				<p>Booking for {{.Owner.DisplayName}} - {{.Owner.Username}}</p>
+				<p>Booking for {{.Owner.DisplayName}} - {{.Owner.Username}} - Ticket No. #{{.ID}}</p>
 				<button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
 			</div>
 		</div>
@@ -86,7 +89,7 @@
 								<div class="card" style="width: 100%;">
 									<div class="card-body">
 										<h5 class="card-title">{{.Activity.Title}}</h5>
-										<h6 class="card-subtitle mb-2 text-body-secondary">{{.Owner.Username}} - {{.StartTime.Format "02/01/06"}} - {{.StartTime.Format "15:04"}} - {{.Location}}</h6>
+										<h6 class="card-subtitle mb-2 text-body-secondary">{{.Owner.Username}} - {{.StartTime.Format "02/01/06"}} - {{.StartTime.Format "15:04"}} - {{$ttlayout.FindPeriod .StartTime}} - {{.Location}}</h6>
 
 										<div class="w-100 d-flex flex-row justify-content-between">
 											<a href="#" class="card-link" data-bs-toggle="modal" data-bs-target="#modal-{{.ID}}">Details</a>
@@ -127,7 +130,7 @@
 								<div class="card border-primary" style="width: 100%;">
 									<div class="card-body">
 										<h5 class="card-title">{{.Activity.Title}}</h5>
-										<h6 class="card-subtitle mb-2 text-body-secondary">{{.Owner.Username}} - {{.StartTime.Format "02/01/06"}} - {{.StartTime.Format "15:04"}} - {{.Location}}</h6>
+										<h6 class="card-subtitle mb-2 text-body-secondary">{{.Owner.Username}} - {{.StartTime.Format "02/01/06"}} - {{.StartTime.Format "15:04"}} - {{$ttlayout.FindPeriod .StartTime}} - {{.Location}}</h6>
 
 										<div class="w-100 d-flex flex-row justify-content-between">
 											<a href="#" class="card-link" data-bs-toggle="modal" data-bs-target="#modal-{{.ID}}">Details</a>
@@ -173,7 +176,7 @@
 									<div class="card border-success" style="width: 100%;">
 										<div class="card-body">
 											<h5 class="card-title">{{.Activity.Title}}</h5>
-											<h6 class="card-subtitle mb-2 text-body-secondary">{{.Owner.Username}} - {{.StartTime.Format "02/01/06"}} - {{.StartTime.Format "15:04"}} - {{.Location}}</h6>
+											<h6 class="card-subtitle mb-2 text-body-secondary">{{.Owner.Username}} - {{.StartTime.Format "02/01/06"}} - {{.StartTime.Format "15:04"}} - {{$ttlayout.FindPeriod .StartTime}} - {{.Location}}</h6>
 
 											<div class="w-100 d-flex flex-row justify-content-between">
 												<a href="#" class="card-link" data-bs-toggle="modal" data-bs-target="#modal-{{.ID}}">Details</a>
@@ -208,7 +211,7 @@
 									<div class="card border-danger" style="width: 100%;">
 										<div class="card-body">
 											<h5 class="card-title">{{.Activity.Title}}</h5>
-											<h6 class="card-subtitle mb-2 text-body-secondary">{{.Owner.Username}} - {{.StartTime.Format "02/01/06"}} - {{.StartTime.Format "15:04"}} - {{.Location}}</h6>
+											<h6 class="card-subtitle mb-2 text-body-secondary">{{.Owner.Username}} - {{.StartTime.Format "02/01/06"}} - {{.StartTime.Format "15:04"}} - {{$ttlayout.FindPeriod .StartTime}} - {{.Location}}</h6>
 
 											<div class="w-100 d-flex flex-row justify-content-between">
 												<a href="#" class="card-link" data-bs-toggle="modal" data-bs-target="#modal-{{.ID}}">Details</a>

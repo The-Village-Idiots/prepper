@@ -191,6 +191,7 @@ func initRoutes(router *gin.Engine) {
 		r.Any("/", handleAPIRoot)
 		r.POST("/user/edit/:id", handleAPIEditUser)
 		r.GET("/dashboard", handleAPIDashboard)
+		r.GET("/period", handleAPIPeriod)
 
 		r = r.Group("/item/", session.Permissions(&Sessions, Database, data.CapManageInventory, false))
 		{

@@ -291,3 +291,42 @@ func handleAPIDashboard(c *gin.Context) {
 		"notifications": a,
 	})
 }
+
+func handleAPIPeriod(c *gin.Context) {
+	s := Sessions.Start(c)
+	defer s.Update()
+
+	if !s.SignedIn {
+		c.JSON(http.StatusForbidden, gin.H{
+			"error":   "Access Denied",
+			"message": "Please authenticate first",
+		})
+		return
+	}
+
+	ts, ok := c.GetQuery("time")
+	if !ok {
+		c.JSON(http.StatusBadRequest, gin.H{
+			"error":   "Bad Request",
+			"message": "Need a time parameter",
+		})
+	}
+
+	t, err := time.Parse("15:04", ts)
+	if err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{
+			"error":   "Bad Request",
+			"message": "Bad time format: " + err.Error(),
+		})
+	}
+
+	p := Config.TimetableLayout.FindPeriod(t)
+	if p == nil {
+		c.JSON(http.StatusNotFound, gin.H{
+			"error":   "Not Found",
+			"message": "No matching period",
+		})
+	}
+
+	c.JSON(http.StatusOK, p)
+}

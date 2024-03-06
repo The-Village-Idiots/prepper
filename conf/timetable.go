@@ -80,6 +80,15 @@ func (p *Period) Compare(t time.Time) int {
 	return 1
 }
 
+// String returns the period's name for implicit formatting.
+func (p *Period) String() string {
+	if p == nil {
+		return "Period 1"
+	}
+
+	return p.Name
+}
+
 // PeriodTime allows the parsing of human-friendly timing information.
 type PeriodTime time.Time
 

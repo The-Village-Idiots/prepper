@@ -12,6 +12,8 @@ const reload_interval = 60 * 1000;
 const max_notifications = 5;
 // Endpoint on the server to return JSON
 const api_endpoint = "/api/dashboard";
+// Endpoint for period names
+const period_endpoint = "/api/period";
 
 // Number of notifications in the notification area.
 let notifications_count = 0;
@@ -80,10 +82,43 @@ function ondismissed()
  */
 function onload()
 {
+	// Enable popovers
+	const popoverTriggerList = document.querySelectorAll('[data-bs-toggle="popover"]')
+	const popoverList = [...popoverTriggerList].map(popoverTriggerEl => new bootstrap.Popover(popoverTriggerEl))
+
 	console.log("dashboad will update every " + reload_interval/1000 + "s");
 	setInterval(function() {
 		dashboard_reload();
 	}, reload_interval);
 
 	dashboard_reload();
+}
+
+/*
+ * Called on hovering over a time specification to show a popover displaying
+ * the period name.
+ */
+function timeHover(ev)
+{
+	var dt = ev.srcElement.innerText;
+	var tm = dt.split(" ")[0];
+
+	console.log(period_endpoint + "?time=" + encodeURIComponent(tm));
+
+	var req = new XMLHttpRequest();
+	req.open("GET", period_endpoint + "?time=" + encodeURI(tm), true);
+	req.onreadystatechange = function() {
+		if (this.readyState == 4) {
+			if (this.status == 200) {
+				let dat = JSON.parse(this.responseText);
+				let em = ev.srcElement;
+
+				// Reset popover
+				em.setAttribute("data-bs-content", dat.name);
+				$(em).popover('dispose');
+				$(em).popover('show');
+			}
+		}
+	}
+	req.send();
 }

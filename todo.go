@@ -6,6 +6,7 @@ import (
 	"strconv"
 	"time"
 
+	"github.com/ejv2/prepper/conf"
 	"github.com/ejv2/prepper/data"
 	"github.com/ejv2/prepper/notifications"
 	"github.com/gin-gonic/gin"
@@ -47,11 +48,12 @@ func handleTodo(c *gin.Context) {
 
 	dat := struct {
 		DashboardData
+		Config   conf.Config
 		Pending  []data.Booking
 		Progress []data.Booking
 		Done     []data.Booking
 		Rejected []data.Booking
-	}{ddat, pnd, prog, done, rej}
+	}{ddat, Config, pnd, prog, done, rej}
 
 	c.HTML(http.StatusOK, "todo.gohtml", dat)
 }
