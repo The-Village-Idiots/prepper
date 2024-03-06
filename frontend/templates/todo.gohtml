@@ -41,6 +41,11 @@
 						{{end}}
 					</tbody>
 				</table>
+
+				<p>
+					<strong>Teacher Comments:</strong>
+					{{if .Comments}}{{.Comments}}{{else}}<em>No teacher comments</em>{{end}}
+				</p>
 			</div>
 			<div class="modal-footer flex justify-content-between">
 				<p>Booking for {{.Owner.DisplayName}} - {{.Owner.Username}} - Ticket No. #{{.ID}}</p>

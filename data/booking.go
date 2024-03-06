@@ -94,6 +94,8 @@ type Booking struct {
 
 	OwnerID uint
 	Owner   User
+
+	Comments string
 }
 
 // Past returns true if the end time of the given booking is before the current
