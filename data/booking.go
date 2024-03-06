@@ -156,7 +156,7 @@ func (b Booking) Delete(db *gorm.DB) error {
 // database. The owner is taken to be the owner of act. If act is not yet a
 // temporary activity, an error is returned. Else, all errors returned will be
 // SQL-related.
-func NewBooking(db *gorm.DB, act Activity, location string, start, end time.Time) (Booking, error) {
+func NewBooking(db *gorm.DB, act Activity, location string, start, end time.Time, comments string) (Booking, error) {
 	if !act.Temporary {
 		return Booking{}, fmt.Errorf("book activity %s: %w", act.Title, ErrNotTemporary)
 	}
@@ -165,6 +165,7 @@ func NewBooking(db *gorm.DB, act Activity, location string, start, end time.Time
 		StartTime:  start.UTC(),
 		EndTime:    end.UTC(),
 		Location:   location,
+		Comments:   comments,
 		ActivityID: act.ID,
 		OwnerID:    act.OwnerID,
 	}

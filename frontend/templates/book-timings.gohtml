@@ -66,10 +66,17 @@
 								</div>
 							</div>
 
-							<div class="row mb-4">
+							<div class="row">
 								<div class="col">
 									<label class="form-label" for="location-input">Activity Location:</label>
 									<input class="form-control" type="text" name="location" id="location-input" required>
+								</div>
+							</div>
+
+							<div class="row mb-4">
+								<div class="col">
+									<label class="form-label" for="comments-input">Extra comments:</label>
+									<textarea class="form-control" type="text" name="comments" id="comments-input"></textarea>
 								</div>
 							</div>
 
@@ -159,6 +166,14 @@
 											</div>
 										{{end}}
 									{{end}}
+								</div>
+
+								<a data-bs-toggle="collapse" href="#commentsCollapse" role="button">Add comments</a>
+								<div class="collapse row" id="commentsCollapse">
+									<div class="col">
+										<label class="form-label" for="comments-input">Extra comments:</label>
+										<textarea class="form-control" type="text" name="comments" id="comments-input"></textarea>
+									</div>
 								</div>
 							</div>
 						{{end}}

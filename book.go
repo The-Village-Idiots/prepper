@@ -3,7 +3,6 @@ package main
 import (
 	"errors"
 	"fmt"
-	"log"
 	"net/http"
 	"net/url"
 	"regexp"
@@ -35,11 +34,9 @@ const (
 // quaranteed to be filled in.
 type ItemInformation []data.EquipmentSet
 
-// NewItemInformation parses a new ItemInformation set from a request's query
-// parameters.
-func NewItemInformation(r *http.Request) (ItemInformation, error) {
-	qs := r.URL.Query()
-
+// itemInfoFromValues parses a set of url.Values into a set of item information
+// values.
+func itemInfoFromValues(qs url.Values) (ItemInformation, error) {
 	inf := make(ItemInformation, 0, len(qs))
 	for param := range qs {
 		if matchItems.MatchString(param) || matchExtra.MatchString(param) {
@@ -73,6 +70,19 @@ func NewItemInformation(r *http.Request) (ItemInformation, error) {
 	}
 
 	return inf, nil
+}
+
+// NewItemInformation parses a new ItemInformation set from a request's query
+// parameters.
+func NewItemInformation(r *http.Request) (ItemInformation, error) {
+	return itemInfoFromValues(r.URL.Query())
+}
+
+// NewPostItemInformation parses a new ItemInformation from a request's post
+// parameters. You must have already  parsed the request body (i.e via
+// c.MultipartForm) before using this function.
+func NewPostItemInformation(r *http.Request) (ItemInformation, error) {
+	return itemInfoFromValues(r.PostForm)
 }
 
 // Copy copies any contained items into the destination activity, overwriting
@@ -351,8 +361,6 @@ func handleBookSubmission(c *gin.Context) {
 	}
 
 	sstime, setime := c.Query("start_time"), c.Query("end_time")
-	log.Println(sstime, setime)
-
 	stime, err := time.Parse(timeFormat, sstime)
 	if err != nil {
 		c.String(http.StatusBadRequest, "Bad Start Time Format: %s", err.Error())
@@ -379,6 +387,10 @@ func handleBookSubmission(c *gin.Context) {
 		c.String(http.StatusBadRequest, "Missing Location Parameter")
 		return
 	}
+	comments, ok := c.GetQuery("comments")
+	if !ok {
+		comments = ""
+	}
 
 	// Copy and clone this activity.
 	// Setting extras to nil, as we already appended them earlier.
@@ -389,7 +401,7 @@ func handleBookSubmission(c *gin.Context) {
 		return
 	}
 
-	bk, err := data.NewBooking(Database, a, location, start, end)
+	bk, err := data.NewBooking(Database, a, location, start, end, comments)
 	if err != nil {
 		internalError(c, err)
 		return
@@ -585,6 +597,15 @@ func handleBookDoAmend(c *gin.Context) {
 		c.String(http.StatusForbidden, "Permission Denied")
 		return
 	}
+
+	c.MultipartForm()
+	it, err := NewPostItemInformation(c.Request)
+	if err != nil {
+		internalError(c, err)
+		return
+	}
+
+	c.JSON(http.StatusOK, it)
 }
 
 // handleBookCancel is the handler for "/book/booking/[ID]/cancel".
