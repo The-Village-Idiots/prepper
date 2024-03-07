@@ -11,8 +11,8 @@
 		<div class="collapse navbar-collapse" id="dashboardNavCollapse">
 			<div class="navbar-nav">
 				<a class="nav-link" href="/dashboard/">Home</a>
-				<a class="nav-link" href="/book/">Book</a>
 				{{if not .User.IsTechnician}}
+					<a class="nav-link" href="/book/">Book</a>
 					<a class="nav-link" href="/book/my">My Bookings</a>
 				{{end}}
 
