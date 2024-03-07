@@ -16,7 +16,7 @@
 	<tbody>
 		{{range .}}
 			<tr>
-				<td>{{.ID}}</td>
+				<td><a href="/book/booking/{{.ID}}">{{.ID}}</a></td>
 				<td>{{.Activity.Title}}</td>
 				<td>{{.Location}}</td>
 				<td>{{.Owner.DisplayName}} ({{.Owner.Username}})</td>
@@ -118,7 +118,7 @@
 								<tbody>
 									{{range .OngoingBookings}}
 										<tr>
-											<td>{{.ID}}</td>
+											<td><a href="/book/booking/{{.ID}}">{{.ID}}</a></td>
 											<td>{{.Activity.Title}}</td>
 											<td>{{.Location}}</td>
 											<td>{{.Owner.DisplayName}} ({{.Owner.Username}})</td>
