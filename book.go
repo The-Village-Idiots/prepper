@@ -25,8 +25,9 @@ var (
 
 // Date and time formats for parsing HTML datetime submissions.
 const (
-	timeFormat = "15:04"
-	dateFormat = "2006-01-02"
+	timeFormat     = "15:04"
+	dateFormat     = "2006-01-02"
+	datetimeFormat = "2006-01-02T15:04"
 )
 
 // ItemInformation is the set of information submitted for use in the next
@@ -599,13 +600,67 @@ func handleBookDoAmend(c *gin.Context) {
 	}
 
 	c.MultipartForm()
-	it, err := NewPostItemInformation(c.Request)
+	set, err := NewPostItemInformation(c.Request)
 	if err != nil {
 		internalError(c, err)
 		return
 	}
 
-	c.JSON(http.StatusOK, it)
+	sstime, setime := c.PostForm("start_datetime"), c.PostForm("end_datetime")
+	stime, err := time.Parse(datetimeFormat, sstime)
+	if err != nil {
+		c.String(http.StatusBadRequest, "Bad Start Time Format: %s", err.Error())
+		return
+	}
+
+	etime, err := time.Parse(datetimeFormat, setime)
+	if err != nil {
+		c.String(http.StatusBadRequest, "Bad End Time Format: %s", err.Error())
+		return
+	}
+
+	// Handle zone offsets as HTML does not supply them
+	_, off := time.Now().Zone()
+	stime = stime.Add(time.Duration(off) * -time.Second).In(time.Local).Add(2 * time.Minute)
+	etime = etime.Add(time.Duration(off) * -time.Second).In(time.Local).Add(2 * time.Minute)
+
+	location, ok := c.GetPostForm("location")
+	if !ok {
+		c.String(http.StatusBadRequest, "Missing Location Parameter")
+		return
+	}
+	comments, ok := c.GetPostForm("comments")
+	if !ok {
+		comments = ""
+	}
+
+	// Update original activity
+	set.Copy(&bk.Activity)
+	bk.Location = location
+	bk.Comments = comments
+	bk.StartTime = stime
+	bk.EndTime = etime
+	if err := Database.Updates(&bk).Error; err != nil {
+		internalError(c, err)
+		return
+	}
+
+	// Push notification out to technicians
+	urs, err := data.GetRoleUsers(Database, data.UserTechnician)
+	if err == nil {
+		// Ignore errors and just push the booking
+		for _, u := range urs {
+			Notifications.PushUser(u.ID, notifications.Notification{
+				Title:  "Booking Amended",
+				Body:   fmt.Sprint(bk.Owner.DisplayName(), " has amended their booking #", bk.ID, " of ", bk.Activity.Title, ". Reload to review changes."),
+				Type:   notifications.TypeImportant,
+				Action: "/todo/",
+				Time:   time.Now(),
+			})
+		}
+	}
+
+	c.Redirect(http.StatusFound, fmt.Sprint("/book/booking/", bk.ID))
 }
 
 // handleBookCancel is the handler for "/book/booking/[ID]/cancel".
