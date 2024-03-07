@@ -187,7 +187,7 @@ func GetBooking(db *gorm.DB, id uint) (Booking, error) {
 	}
 
 	u := Booking{Model: &gorm.Model{ID: id}}
-	err := db.Where(&u).Joins("Activity").
+	err := db.Where(&u).Joins("Activity").Joins("Owner").
 		Preload("Activity.Equipment").
 		Preload("Activity.Equipment.Item").
 		First(&u).Error
