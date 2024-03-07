@@ -203,6 +203,34 @@ func handleBook(c *gin.Context) {
 	c.HTML(http.StatusOK, "book.gohtml", dat)
 }
 
+// handleBookMy is the handler for "/book/my".
+//
+// Shows a list of a user's current bookings. Designed for use my teachers
+// mainly.
+func handleBookMy(c *gin.Context) {
+	s := Sessions.Start(c)
+	defer s.Update()
+
+	ddat, err := NewDashboardData(s)
+	if err != nil {
+		internalError(c, err)
+		return
+	}
+
+	bks, err := data.GetPersonalBookings(Database, s.UserID)
+	if err != nil {
+		internalError(c, err)
+		return
+	}
+
+	dat := struct {
+		DashboardData
+		Bookings []data.Booking
+	}{ddat, bks}
+
+	c.HTML(http.StatusOK, "my-bookings.gohtml", dat)
+}
+
 // handleBookActivity is the handler for "/book/[ACTIVITY_ID]"
 //
 // This is the second stage of the form.

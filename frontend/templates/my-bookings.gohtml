@@ -1,0 +1,71 @@
+<!DOCTYPE html>
+
+<html>
+	<head>
+		{{template "head.gohtml" "Manage Account"}}
+
+		<script src="/assets/scripts/dashboard.js"></script>
+	</head>
+
+	<body>
+		{{template "dashnav.gohtml" .}}
+
+		<template id="toast_template">
+			<div class="toast show tex-bg-primary" role="alert" id="new-notification">
+				<div class="toast-header">
+					<strong class="me-auto toast-title">Bootstrap</strong>
+					<small class="text-body-secondary toast-timing">just now</small>
+					<button type="button" class="btn-close" data-bs-dismiss="toast"></button>
+				</div>
+				<div class="toast-body">
+				</div>
+			</div>
+		</template>
+
+		<div id="notification_area" class="toast-container position-fixed bottom-0 end-0 p-3"></div>
+
+		<div class="container container-fluid mt-3">
+			<h1>Your Bookings</h1>
+			<hr>
+
+			<div class="mt-4">
+				<table class="table table-striped">
+					<thead>
+						<tr>
+							<th scope="col">Ticket No.</th>
+							<th scope="col">Activity</th>
+							<th scope="col">Location</th>
+							<th scope="col">Timings</th>
+							<th scope="col">Status</th>
+							<th scope="col">Actions</th>
+						</tr>
+					</thead>
+
+					<tbody>
+						{{range .Bookings}}
+							<tr>
+								<th scope="col">
+									<a href="/book/booking/{{.ID}}">{{.ID}}</a>
+								</th>
+								<td>{{.Activity.Title}}</td>
+								<td>{{.Location}}</td>
+								<td><a href="#" onmouseover="timeHover(event);" data-bs-toggle="popover" data-bs-content="Period 1" data-bs-trigger="hover">{{.StartTime.Format "15:04"}} - {{.EndTime.Format "15:04"}}</a></td>
+								<td>
+									{{if .Status.Ready}}<span class="text-success">{{.Status}}</span>{{end}}
+									{{if .Status.Pending}}<span class="text-secondary">{{.Status}}</span>{{end}}
+									{{if .Status.Progress}}<span class="text-primary">{{.Status}}</span>{{end}}
+									{{if .Status.Rejected}}<span class="text-danger">{{.Status}}</span>{{end}}
+								</td>
+								<td>
+									<a href="/book/booking/{{.ID}}/amend">Amend</a>
+									<a class="text-danger" href="/book/booking/{{.ID}}/cancel">Cancel</a>
+								</td>
+							</tr>
+						{{end}}
+					</tbody>
+				</table>
+
+			</div>
+		</div>
+	</body>
+</html>

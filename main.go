@@ -176,6 +176,8 @@ func initRoutes(router *gin.Engine) {
 	r = router.Group("/book/", session.Authenticator(&Sessions, true))
 	{
 		r.GET("/", handleBook)
+		r.GET("/my", handleBookMy)
+
 		r.GET("/:activity", handleBookActivity)
 		r.GET("/:activity/timings", handleBookTimings)
 		r.GET("/:activity/submit", handleBookSubmission)
