@@ -18,6 +18,7 @@
 			<form class="mt-2" method="POST">
 				<p>
 					You are amending the booking for ticket <strong>#{{.Booking.ID}}</strong>.
+					You can further amend this booking until {{.LastTime.Format "02 Jan 06 15:04 MST"}}, or when it has been processed by a technician.
 					{{if .Booking.Status.Progress}}
 						This booking was already in the process of preparation.
 						Your technician will be notified but, as a result, your booking may take longer to process.
@@ -67,7 +68,7 @@
 					</thead>
 
 					<tbody>
-						{{range $i, $item := .Activity.Equipment}}
+						{{range $i, $item := .Core}}
 							<tr>
 								<td>{{$item.VisualIndex $i}}</td>
 								<td>{{$item.Item.Name}}</td>
@@ -91,6 +92,15 @@
 					</thead>
 
 					<tbody id="extra_items_body">
+						{{range $i, $item := .Extra}}
+							<tr>
+								<td>{{$item.VisualIndex $i}}</td>
+								<td>{{$item.Item.Name}}</td>
+								<td>
+									<input class="form-control" name="eqty_{{$item.Item.ID}}" value="{{$item.Quantity}}" type="number" min="1" max="{{$item.Item.Quantity}}">
+								</td>
+							</tr>
+						{{end}}
 					</tbody>
 				</table>
 

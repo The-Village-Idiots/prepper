@@ -552,12 +552,26 @@ func handleBookAmend(c *gin.Context) {
 		return
 	}
 
+	core := make([]data.EquipmentSet, 0, len(bk.Activity.Equipment))
+	extra := make([]data.EquipmentSet, 0, len(bk.Activity.Equipment))
+
+	for _, e := range bk.Activity.Equipment {
+		if e.Important {
+			core = append(core, e)
+		} else {
+			extra = append(extra, e)
+		}
+	}
+	lasttime := bk.StartTime.Add(-time.Hour)
+
 	dat := struct {
 		DashboardData
-		Booking   data.Booking
-		Activity  data.Activity
-		Equipment []data.EquipmentItem
-	}{ddat, bk, bk.Activity, items}
+		Booking     data.Booking
+		Activity    data.Activity
+		Equipment   []data.EquipmentItem
+		Core, Extra []data.EquipmentSet
+		LastTime    time.Time
+	}{ddat, bk, bk.Activity, items, core, extra, lasttime}
 
 	c.HTML(http.StatusOK, "booking-amend.gohtml", dat)
 }
@@ -643,6 +657,12 @@ func handleBookDoAmend(c *gin.Context) {
 	if err := Database.Updates(&bk).Error; err != nil {
 		internalError(c, err)
 		return
+	}
+	for _, eq := range bk.Activity.Equipment {
+		if err := Database.Updates(&eq).Error; err != nil {
+			internalError(c, err)
+			return
+		}
 	}
 
 	// Push notification out to technicians
