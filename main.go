@@ -173,6 +173,14 @@ func initRoutes(router *gin.Engine) {
 		r.GET("/locate", handleInventoryLocate)
 	}
 
+	r = router.Group("/activity/", session.Permissions(&Sessions, Database, data.CapManageInventory, true))
+	{
+		r.GET("/", handleActivities)
+		r.GET("/new", handleActivityNew)
+		r.GET("/:activity/edit", handleActivityEdit)
+		r.GET("/:activity/delete", handleActivityDelete)
+	}
+
 	r = router.Group("/book/", session.Authenticator(&Sessions, true))
 	{
 		r.GET("/", handleBook)

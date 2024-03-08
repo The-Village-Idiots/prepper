@@ -1,0 +1,29 @@
+<!DOCTYPE html>
+
+<html>
+	<head>
+		{{template "head.gohtml" "Confirm Deletion"}}
+
+		<script src="/assets/scripts/activitysearch.js"></script>
+	</head>
+
+	<body>
+		{{template "dashnav.gohtml" .}}
+
+		<div class="container container-fluid mt-3 text-center">
+			<h1 class="text-danger">Confirm Deletion</h1>
+
+			<div class="mt-4">
+				<p>
+					Deleting an activity is <strong>permanent</strong> and will result in the cancellation of all past, ongoing and future bookings for this activity.
+
+					There are currently <strong>{{.BookingCount}}</strong> live bookings which reference this activity, all of which will be cancelled without notice.
+
+					Please confirm you wish to continue.
+				</p>
+
+				<a class="text-danger" href="/activity/{{.ID}}/delete?confirm">I understand, delete this activity</a>
+			</div>
+		</div>
+	</body>
+</html>
