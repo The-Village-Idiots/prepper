@@ -103,7 +103,9 @@ function timeHover(ev)
 	var dt = ev.srcElement.innerText;
 	var tm = dt.split(" ")[0];
 
-	console.log(period_endpoint + "?time=" + encodeURIComponent(tm));
+	if ($(ev.srcElement).is('[period-fetched]')) {
+		return;
+	}
 
 	var req = new XMLHttpRequest();
 	req.open("GET", period_endpoint + "?time=" + encodeURI(tm), true);
@@ -117,6 +119,7 @@ function timeHover(ev)
 				em.setAttribute("data-bs-content", dat.name);
 				$(em).popover('dispose');
 				$(em).popover('show');
+				$(em).attr('period-fetched', 'yes')
 			}
 		}
 	}
