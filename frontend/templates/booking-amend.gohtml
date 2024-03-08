@@ -12,13 +12,13 @@
 		{{template "add-items.gohtml" .}}
 
 		<div class="container container-fluid mt-3">
-			<h1>Booking Ticket #{{.Booking.ID}}</h1>
+			<h1>{{if .Postpone}}Postpone{{else}}Amend{{end}} Booking Ticket #{{.Booking.ID}}</h1>
 			<hr>
 
-			<form class="mt-2" method="POST">
+			<form class="mt-2" method="POST" {{if .Postpone}}action="/book/booking/{{.Booking.ID}}/amend?postpone"{{end}}>
 				<p>
 					You are amending the booking for ticket <strong>#{{.Booking.ID}}</strong>.
-					You can further amend this booking until {{.LastTime.Format "02 Jan 06 15:04 MST"}}, or when it has been processed by a technician.
+					{{if not .Postpone}}You can further amend this booking until {{.LastTime.Format "02 Jan 06 15:04 MST"}}, or when it has been processed by a technician.{{end}}
 					{{if .Booking.Status.Progress}}
 						This booking was already in the process of preparation.
 						Your technician will be notified but, as a result, your booking may take longer to process.
@@ -47,64 +47,67 @@
 					</div>
 				</div>
 
-				<div class="row mb-4">
-					<div class="col">
-						<label class="form-label" for="comments-input">Extra comments:</label>
-						<textarea class="form-control" type="text" name="comments" id="comments-input">{{.Booking.Comments}}</textarea>
+
+				{{if not .Postpone}}
+					<div class="row mb-4">
+						<div class="col">
+							<label class="form-label" for="comments-input">Extra comments:</label>
+							<textarea class="form-control" type="text" name="comments" id="comments-input">{{.Booking.Comments}}</textarea>
+						</div>
 					</div>
-				</div>
 
-				<h3 class="mt-3">Equipment</h3>
+					<h3 class="mt-3">Equipment</h3>
 
-				<h4>Core Items</h4>
+					<h4>Core Items</h4>
 
-				<table class="table table-striped">
-					<thead>
-						<tr>
-							<th scope="col">#</th>
-							<th scope="col">Name</th>
-							<th scope="col">Quantity</th>
-						</tr>
-					</thead>
-
-					<tbody>
-						{{range $i, $item := .Core}}
+					<table class="table table-striped">
+						<thead>
 							<tr>
-								<td>{{$item.VisualIndex $i}}</td>
-								<td>{{$item.Item.Name}}</td>
-								<td>
-									<input class="form-control" name="qty_{{$item.Item.ID}}" value="{{$item.Quantity}}" type="number" min="1" max="{{$item.Item.Quantity}}">
-								</td>
+								<th scope="col">#</th>
+								<th scope="col">Name</th>
+								<th scope="col">Quantity</th>
 							</tr>
-						{{end}}
-					</tbody>
-				</table>
+						</thead>
 
-				<h4>Extra Items</h4>
+						<tbody>
+							{{range $i, $item := .Core}}
+								<tr>
+									<td>{{$item.VisualIndex $i}}</td>
+									<td>{{$item.Item.Name}}</td>
+									<td>
+										<input class="form-control" name="qty_{{$item.Item.ID}}" value="{{$item.Quantity}}" type="number" min="1" max="{{$item.Item.Quantity}}">
+									</td>
+								</tr>
+							{{end}}
+						</tbody>
+					</table>
 
-				<table class="table table-striped" id="extra_items">
-					<thead>
-						<tr>
-							<th scope="col">#</th>
-							<th scope="col">Name</th>
-							<th scope="col">Quantity</th>
-						</tr>
-					</thead>
+					<h4>Extra Items</h4>
 
-					<tbody id="extra_items_body">
-						{{range $i, $item := .Extra}}
+					<table class="table table-striped" id="extra_items">
+						<thead>
 							<tr>
-								<td>{{$item.VisualIndex $i}}</td>
-								<td>{{$item.Item.Name}}</td>
-								<td>
-									<input class="form-control" name="eqty_{{$item.Item.ID}}" value="{{$item.Quantity}}" type="number" min="1" max="{{$item.Item.Quantity}}">
-								</td>
+								<th scope="col">#</th>
+								<th scope="col">Name</th>
+								<th scope="col">Quantity</th>
 							</tr>
-						{{end}}
-					</tbody>
-				</table>
+						</thead>
 
-				<a href="#" onclick="add_item(event)">Add Extra Item</a>
+						<tbody id="extra_items_body">
+							{{range $i, $item := .Extra}}
+								<tr>
+									<td>{{$item.VisualIndex $i}}</td>
+									<td>{{$item.Item.Name}}</td>
+									<td>
+										<input class="form-control" name="eqty_{{$item.Item.ID}}" value="{{$item.Quantity}}" type="number" min="1" max="{{$item.Item.Quantity}}">
+									</td>
+								</tr>
+							{{end}}
+						</tbody>
+					</table>
+
+					<a href="#" onclick="add_item(event)">Add Extra Item</a>
+				{{end}}
 
 				<hr>
 

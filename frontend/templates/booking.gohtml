@@ -17,7 +17,8 @@
 					{{if eq .User.ID .Booking.OwnerID -}}
 						<br>
 						<br>
-						You may still <a class="text-danger" href="/book/booking/{{.Booking.ID}}/cancel">cancel the booking</a>.
+						You may still <a class="text-warning" href="/book/booking/{{.Booking.ID}}/amend?postpone">postpone</a>
+						or <a class="text-danger" href="/book/booking/{{.Booking.ID}}/cancel">cancel</a> this booking.
 					{{- end -}}
 				</div>
 			{{- end -}}
@@ -125,6 +126,8 @@
 					|
 					<a class="text-warning" href="/book/booking/{{.Booking.ID}}/amend">Amend This Booking</a>
 					{{end -}}
+					|
+					<a class="text-danger" href="/book/booking/{{.Booking.ID}}/amend?postpone">Postpone This Booking</a>
 					|
 					<a class="text-danger" href="/book/booking/{{.Booking.ID}}/cancel">Cancel This Booking</a>
 					{{end}}

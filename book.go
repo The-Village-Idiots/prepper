@@ -540,6 +540,8 @@ func handleBooking(c *gin.Context) {
 // handleBookAmend is the handler for "/book/booking/[ID]/amend".
 //
 // Allows the creating user to amend a booking which they have created.
+// Amendments may be submited up to the deadline or when they are processed,
+// except postponements, which may be submitted at any time.
 func handleBookAmend(c *gin.Context) {
 	s := Sessions.Start(c)
 	defer s.Update()
@@ -575,7 +577,8 @@ func handleBookAmend(c *gin.Context) {
 		return
 	}
 
-	if !bk.MayAmend() {
+	_, postpone := c.GetQuery("postpone")
+	if !bk.MayAmend() && !postpone {
 		c.Redirect(http.StatusFound, fmt.Sprint("/book/booking/", bk.ID, "?noamend"))
 		return
 	}
@@ -599,7 +602,8 @@ func handleBookAmend(c *gin.Context) {
 		Equipment   []data.EquipmentItem
 		Core, Extra []data.EquipmentSet
 		LastTime    time.Time
-	}{ddat, bk, bk.Activity, items, core, extra, lasttime}
+		Postpone    bool
+	}{ddat, bk, bk.Activity, items, core, extra, lasttime, postpone}
 
 	c.HTML(http.StatusOK, "booking-amend.gohtml", dat)
 }
@@ -608,6 +612,14 @@ func handleBookAmend(c *gin.Context) {
 //
 // Is the form handler for the frontend returned from this endpoint.
 func handleBookDoAmend(c *gin.Context) {
+	if _, p := c.GetQuery("postpone"); p {
+		handleBookPostpone(c)
+	} else {
+		handleBookDoingAmend(c)
+	}
+}
+
+func handleBookDoingAmend(c *gin.Context) {
 	s := Sessions.Start(c)
 	defer s.Update()
 
@@ -701,6 +713,100 @@ func handleBookDoAmend(c *gin.Context) {
 			Notifications.PushUser(u.ID, notifications.Notification{
 				Title:  "Booking Amended",
 				Body:   fmt.Sprint(bk.Owner.DisplayName(), " has amended their booking #", bk.ID, " of ", bk.Activity.Title, ". Reload to review changes."),
+				Type:   notifications.TypeImportant,
+				Action: "/todo/",
+				Time:   time.Now(),
+			})
+		}
+	}
+
+	c.Redirect(http.StatusFound, fmt.Sprint("/book/booking/", bk.ID))
+}
+
+func handleBookPostpone(c *gin.Context) {
+	s := Sessions.Start(c)
+	defer s.Update()
+
+	ddat, err := NewDashboardData(s)
+	if err != nil {
+		internalError(c, err)
+		return
+	}
+
+	sid := c.Param("id")
+	lid, err := strconv.ParseUint(sid, 10, 32)
+	if err != nil {
+		c.String(http.StatusBadRequest, "Bad Booking ID")
+		return
+	}
+	id := uint(lid)
+
+	bk, err := data.GetBooking(Database, id)
+	if err != nil {
+		if errors.Is(err, data.ErrNoSuchBooking) {
+			c.String(http.StatusNotFound, "Booking Not Found")
+			return
+		}
+
+		internalError(c, err)
+		return
+	}
+
+	if bk.OwnerID != s.UserID && !ddat.User.Can(data.CapAllBooking) {
+		c.String(http.StatusForbidden, "Permission Denied")
+		return
+	}
+
+	c.MultipartForm()
+	sstime, setime := c.PostForm("start_datetime"), c.PostForm("end_datetime")
+	stime, err := time.Parse(datetimeFormat, sstime)
+	if err != nil {
+		c.String(http.StatusBadRequest, "Bad Start Time Format: %s", err.Error())
+		return
+	}
+
+	etime, err := time.Parse(datetimeFormat, setime)
+	if err != nil {
+		c.String(http.StatusBadRequest, "Bad End Time Format: %s", err.Error())
+		return
+	}
+
+	// Handle zone offsets as HTML does not supply them
+	_, off := time.Now().Zone()
+	stime = stime.Add(time.Duration(off) * -time.Second).In(time.Local).Add(2 * time.Minute)
+	etime = etime.Add(time.Duration(off) * -time.Second).In(time.Local).Add(2 * time.Minute)
+
+	if stime.Before(bk.StartTime) || etime.Before(bk.EndTime) {
+		c.String(http.StatusForbidden, "Postponement to before current time not allowed")
+		return
+	}
+
+	location, ok := c.GetPostForm("location")
+	if !ok {
+		c.String(http.StatusBadRequest, "Missing Location Parameter")
+		return
+	}
+
+	// Update original activity
+	bk.Location = location
+	bk.StartTime = stime
+	bk.EndTime = etime
+	if bk.Status != data.BookingStatusPending {
+		bk.Status = data.BookingStatusProgress
+	}
+	if err := Database.Updates(&bk).Error; err != nil {
+		internalError(c, err)
+		return
+	}
+
+	// Push notification out to technicians
+	urs, err := data.GetRoleUsers(Database, data.UserTechnician)
+	if err == nil {
+		// Ignore errors and just push the booking
+		for _, u := range urs {
+			Notifications.PushUser(u.ID, notifications.Notification{
+				Title:  "Booking Postponed",
+				Body:   fmt.Sprint(bk.Owner.DisplayName(), " has postponed their booking #", bk.ID, " of ", bk.Activity.Title, ". It has been automatically re-marked as In Progress. Reload to review changes."),
 				Type:   notifications.TypeImportant,
 				Action: "/todo/",
 				Time:   time.Now(),
