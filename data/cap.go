@@ -26,6 +26,9 @@ const (
 	CapManageInventory      = UserTechnician
 	CapManageOtherInventory = UserAdmin
 
+	// Technicians can manage permanent activities.
+	CapManageActivities = UserTechnician
+
 	// View server logs.
 	CapLogging = UserAdmin
 )

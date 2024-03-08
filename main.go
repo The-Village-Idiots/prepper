@@ -178,6 +178,7 @@ func initRoutes(router *gin.Engine) {
 		r.GET("/", handleActivities)
 		r.GET("/new", handleActivityNew)
 		r.GET("/:activity/edit", handleActivityEdit)
+		r.POST("/:activity/edit", handleActivityDoEdit)
 		r.GET("/:activity/delete", handleActivityDelete)
 	}
 

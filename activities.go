@@ -33,13 +33,15 @@ func handleActivities(c *gin.Context) {
 	}
 
 	delname, deleted := c.GetQuery("deleted")
+	_, saved := c.GetQuery("saved")
 
 	dat := struct {
 		DashboardData
 		Activities  []data.Activity
 		Deleted     bool
 		DeletedName string
-	}{ddat, act, deleted, delname}
+		Saved       bool
+	}{ddat, act, deleted, delname, saved}
 
 	c.HTML(http.StatusOK, "activities.gohtml", dat)
 }
@@ -48,8 +50,93 @@ func handleActivities(c *gin.Context) {
 func handleActivityNew(c *gin.Context) {
 }
 
-// handleActivityEdit is the handler for "/activity/[ID]/edit".
+// handleActivityEdit is the handler for GET "/activity/[ID]/edit".
 func handleActivityEdit(c *gin.Context) {
+	s := Sessions.Start(c)
+	defer s.Update()
+
+	ddat, err := NewDashboardData(s)
+	if err != nil {
+		internalError(c, err)
+		return
+	}
+
+	actsid := c.Param("activity")
+	actid, err := strconv.ParseUint(actsid, 10, 32)
+	if err != nil {
+		c.String(http.StatusBadRequest, "Bad Activity ID")
+		return
+	}
+
+	act, err := data.GetActivity(Database, uint(actid))
+	if err != nil {
+		c.String(http.StatusBadRequest, "Activity Not Found")
+		return
+	}
+
+	eq, err := data.GetEquipment(Database)
+	if err != nil {
+		internalError(c, err)
+		return
+	}
+
+	c.HTML(http.StatusOK, "activity-edit.gohtml", struct {
+		DashboardData
+		Activity  data.Activity
+		Equipment []data.EquipmentItem
+	}{ddat, act, eq})
+}
+
+// handleActivityDoEdit is the handler for POST "/activity/[ID]/edit".
+//
+// This is the form handler for the edit form.
+func handleActivityDoEdit(c *gin.Context) {
+	actsid := c.Param("activity")
+	actid, err := strconv.ParseUint(actsid, 10, 32)
+	if err != nil {
+		c.String(http.StatusBadRequest, "Bad Activity ID")
+		return
+	}
+
+	act, err := data.GetActivity(Database, uint(actid))
+	if err != nil {
+		c.String(http.StatusNotFound, "Activity Not Found")
+		return
+	}
+
+	c.MultipartForm()
+	set, err := NewPostItemInformation(c.Request)
+	if err != nil {
+		c.String(http.StatusBadRequest, "Invalid item set")
+		return
+	}
+
+	sub := struct {
+		Title       string `form:"title"`
+		Description string `form:"description"`
+		Category    string `form:"category"`
+	}{act.Title, act.Description, act.Category}
+	err = c.Bind(&sub)
+	if err != nil {
+		c.String(http.StatusBadRequest, "Recieved bad data")
+	}
+
+	set.Copy(&act)
+	act.Title = sub.Title
+	act.Description = sub.Description
+	act.Category = sub.Category
+	if err := Database.Updates(&act).Error; err != nil {
+		internalError(c, err)
+		return
+	}
+	for _, eq := range act.Equipment {
+		if err := Database.Updates(&eq).Error; err != nil {
+			internalError(c, err)
+			return
+		}
+	}
+
+	c.Redirect(http.StatusFound, "/activity/?saved")
 }
 
 // handleActivityDelete is the handler for "/activity/[ID]/delete".
