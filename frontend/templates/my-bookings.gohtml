@@ -57,7 +57,11 @@
 									{{if .Status.Rejected}}<span class="text-danger">{{.Status}}</span>{{end}}
 								</td>
 								<td>
-									<a href="/book/booking/{{.ID}}/amend">Amend</a>
+									{{if .MayAmend}}
+										<a href="/book/booking/{{.ID}}/amend" disabled>Amend</a>
+									{{else}}
+										<a class="text-danger" href="/book/booking/{{.ID}}/amend?postpone">Postpone</a>
+									{{end}}
 									<a class="text-danger" href="/book/booking/{{.ID}}/cancel">Cancel</a>
 								</td>
 							</tr>
