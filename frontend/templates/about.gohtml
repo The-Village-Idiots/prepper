@@ -1,0 +1,39 @@
+<!DOCTYPE html>
+
+<html>
+	<head>
+		{{template "head.gohtml" "Dashboard"}}
+
+		<script src="/assets/scripts/dashboard.js"></script>
+
+		<style>
+			.logo-image {
+				width: 20%;
+				height: 20%;
+			}
+		</style>
+	</head>
+
+	<body>
+		{{if .SignedIn}}
+			{{template "dashnav.gohtml" .}}
+		{{end}}
+
+		<div class="container container-fluid mt-3 text-center bg-light border p-2 mt-5">
+			<img src="/assets/icon.png" class="logo-image" />
+			<h1>Prepper</h1>
+			<h2 class="text-secondary">{{.VersionString}}</h2>
+
+			<div class="mt-4">
+				Thank you for using Prepper!
+				<br><br>
+				Prepper was <a href="https://github.com/ejv2">Ethan Marshall</a>'s 2024  A-Level Computer Science coursework project
+				and was written between May 2023 to March 2024.
+				<br><br>
+				It is free software (GNU AGPL v3.0).
+				<hr>
+				<a href="/">Back</a>
+			</div>
+		</div>
+	</body>
+</html>

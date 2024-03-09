@@ -126,6 +126,9 @@ func initRoutes(router *gin.Engine) {
 	// Site root
 	router.GET("/", handleRoot)
 
+	// About page
+	router.GET("/about", handleAbout)
+
 	// Login page
 	router.GET("/login", handleLogin)
 	router.POST("/login", handleLoginAttempt)

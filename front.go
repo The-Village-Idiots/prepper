@@ -25,6 +25,32 @@ func handleRoot(c *gin.Context) {
 	}
 }
 
+// handleAbout is the handler for "/about"
+//
+// Shows an about page for this server. Doesn't need authentication although if
+// the user is signed in, we show a navbar.
+func handleAbout(c *gin.Context) {
+	s := Sessions.Start(c)
+	defer s.Update()
+
+	var ddat *DashboardData
+	if s.SignedIn {
+		addat, err := NewDashboardData(s)
+		if err != nil {
+			internalError(c, err)
+			return
+		}
+
+		ddat = &addat
+	}
+
+	c.HTML(http.StatusOK, "about.gohtml", struct {
+		*DashboardData
+		SignedIn      bool
+		VersionString string
+	}{ddat, s.SignedIn, VersionString()})
+}
+
 // handleLogin is the handler for GET "/login"
 //
 // Returns the HTML login page. This *is not* the endpoint for POST request
