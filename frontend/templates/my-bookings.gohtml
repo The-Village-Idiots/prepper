@@ -49,7 +49,7 @@
 								</th>
 								<td>{{.Activity.Title}}</td>
 								<td>{{.Location}}</td>
-								<td><a href="#" onmouseover="timeHover(event);" data-bs-toggle="popover" data-bs-content="Period 1" data-bs-trigger="hover">{{.StartTime.Format "15:04"}} - {{.EndTime.Format "15:04"}}</a></td>
+								<td><a href="#" onmouseover="timeHover(event);" data-bs-toggle="popover" data-bs-content="Out of Hours" data-bs-trigger="hover">{{.StartTime.Format "15:04"}} - {{.EndTime.Format "15:04"}}</a></td>
 								<td>
 									{{if .Status.Ready}}<span class="text-success">{{.Status}}</span>{{end}}
 									{{if .Status.Pending}}<span class="text-secondary">{{.Status}}</span>{{end}}
