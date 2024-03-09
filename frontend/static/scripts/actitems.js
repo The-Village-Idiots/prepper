@@ -4,7 +4,7 @@
  * Part of A-Level Computing 2024
  */
 
-let count = 1;
+/* count variable is set externally in HTML */
 
 /*
  * add_item opens up the add an extra item modal, which then handles the
@@ -47,4 +47,31 @@ function do_add_item(id, name, quantity)
 	/* close dialog */
 	count++;
 	cancel_add_item();
+}
+
+/*
+ * delete_item removes an item from the activity items table.
+ */
+function delete_item(ev)
+{
+	let _e = $(ev.srcElement);
+	let e = _e.closest("tr");
+	let t = _e.closest("tbody");
+
+	let echildren = e.children();
+	let id = $(echildren[0]).text();
+
+	e.remove();
+
+	t.children().each((_, row) => {
+		let rch = $(row).children();
+		let cid = $(rch[0]).text();
+
+		if (cid > id) {
+			let nid = cid - 1;
+			$(rch[0]).text(nid);
+		}
+	});
+
+	count--;
 }

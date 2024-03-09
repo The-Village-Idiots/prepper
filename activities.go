@@ -121,6 +121,12 @@ func handleActivityDoEdit(c *gin.Context) {
 		c.String(http.StatusBadRequest, "Recieved bad data")
 	}
 
+	// Process equipment sets
+	// We later use this to determine what to delete
+	for i := range act.Equipment {
+		act.Equipment[i].Quantity = 0
+	}
+
 	set.Copy(&act)
 	act.Title = sub.Title
 	act.Description = sub.Description
@@ -130,6 +136,15 @@ func handleActivityDoEdit(c *gin.Context) {
 		return
 	}
 	for _, eq := range act.Equipment {
+		if eq.Quantity == 0 {
+			if err := Database.Model(&eq).Where(&eq).Delete(&eq).Error; err != nil {
+				internalError(c, err)
+				return
+			}
+
+			continue
+		}
+
 		if err := Database.Updates(&eq).Error; err != nil {
 			internalError(c, err)
 			return
