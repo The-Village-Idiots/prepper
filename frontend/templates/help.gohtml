@@ -1,0 +1,25 @@
+<!DOCTYPE html>
+
+<html>
+	<head>
+		{{template "head.gohtml" "Help"}}
+	</head>
+
+	<body>
+		{{template "dashnav.gohtml" .}}
+
+		<div class="container container-fluid mt-3 text-center bg-light border p-2 mt-5">
+			<h1>Prepper Help</h1>
+
+			<p>
+				{{.HelpText}}
+			</p>
+
+			<p class="small">Although, for technical support, you may as well ask Santa.</p>
+
+			<hr>
+
+			<a href="/">Back</a>
+		</div>
+	</body>
+</html>

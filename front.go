@@ -5,6 +5,7 @@ import (
 	"log"
 	"net/http"
 
+	"github.com/ejv2/prepper/conf"
 	"github.com/ejv2/prepper/data"
 	"github.com/gin-gonic/gin"
 )
@@ -49,6 +50,30 @@ func handleAbout(c *gin.Context) {
 		SignedIn      bool
 		VersionString string
 	}{ddat, s.SignedIn, VersionString()})
+}
+
+// handleHelp is the handler for "/help"
+//
+// Shows a little help page from the configured help message.
+func handleHelp(c *gin.Context) {
+	s := Sessions.Start(c)
+	defer s.Update()
+
+	ddat, err := NewDashboardData(s)
+	if err != nil {
+		internalError(c, err)
+		return
+	}
+
+	ht := Config.HelpText
+	if ht == "" {
+		ht = conf.DefaultHelpText
+	}
+
+	c.HTML(http.StatusOK, "help.gohtml", struct {
+		DashboardData
+		HelpText string
+	}{ddat, ht})
 }
 
 // handleLogin is the handler for GET "/login"

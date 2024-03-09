@@ -11,6 +11,8 @@ import (
 	"github.com/go-playground/validator"
 )
 
+const DefaultHelpText = "For queries or assistance, please do not hesitate to contact your system administrator"
+
 // Config represents the config file loaded from somewhere on disk at startup.
 // It is de-serialized from JSON by encoding/json.
 type Config struct {
@@ -19,6 +21,8 @@ type Config struct {
 	ListenAddr     string   `validate:"ip_addr|hostname" json:"address"`
 	ListenPort     uint16   `json:"port"`
 	TrustedProxies []string `validate:"dive,ip_addr" json:"proxies"`
+
+	HelpText string `json:"help_text"`
 
 	DebugMode bool `json:"debug"`
 

@@ -129,6 +129,9 @@ func initRoutes(router *gin.Engine) {
 	// About page
 	router.GET("/about", handleAbout)
 
+	// Help page
+	router.GET("/help", session.Authenticator(&Sessions, true), handleHelp)
+
 	// Login page
 	router.GET("/login", handleLogin)
 	router.POST("/login", handleLoginAttempt)

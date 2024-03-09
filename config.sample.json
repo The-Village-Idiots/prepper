@@ -8,5 +8,6 @@
 		"database": "prepper",
 		"username": "prepper",
 		"password": "prepper1234"
-	}
+	},
+	"help_text": "Please feel free to email your system administrator"
 }
