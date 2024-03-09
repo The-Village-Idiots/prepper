@@ -40,7 +40,8 @@ type TimetableLayout []*Period
 // Returns the first period which is defined as containing this time, or else
 // nil if none do.
 func (t TimetableLayout) FindPeriod(tm time.Time) *Period {
-	return bsearch(tm, t)
+	tt := time.Date(0, 1, 1, tm.Hour(), tm.Minute(), tm.Second(), 0, tm.Location())
+	return bsearch(tt, t)
 }
 
 // A Period is a time which spans from start to end in a given day. A nil
