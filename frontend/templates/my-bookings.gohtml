@@ -35,6 +35,7 @@
 							<th scope="col">Ticket No.</th>
 							<th scope="col">Activity</th>
 							<th scope="col">Location</th>
+							<th scope="col">Date</th>
 							<th scope="col">Timings</th>
 							<th scope="col">Status</th>
 							<th scope="col">Actions</th>
@@ -49,6 +50,7 @@
 								</th>
 								<td>{{.Activity.Title}}</td>
 								<td>{{.Location}}</td>
+								<td>{{.StartTime.Format "Mon _2 Jan 2006"}}</td>
 								<td><a href="#" onmouseover="timeHover(event);" data-bs-toggle="popover" data-bs-content="Out of Hours" data-bs-trigger="hover">{{.StartTime.Format "15:04"}} - {{.EndTime.Format "15:04"}}</a></td>
 								<td>
 									{{if .Status.Ready}}<span class="text-success">{{.Status}}</span>{{end}}
