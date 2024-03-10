@@ -6,10 +6,57 @@
 
 		<link rel="stylesheet" href="/assets/timetable.css">
 		<script src="/assets/scripts/booktime.js"></script>
+
+		<script>
+			/* clash detection data */
+			let items = JSON.parse({{.ItemsJSON}});
+		</script>
 	</head>
 
 	<body onload="update_commencing()">
 		{{template "dashnav.gohtml" .}}
+
+		<!-- Clash Modal -->
+		<div class="modal modal-xl fade" id="clashesModal" tabindex="-1">
+			<div class="modal-dialog">
+				<div class="modal-content">
+					<div class="modal-header">
+						<h1 class="modal-title fs-5">Potential Equipment Conflict</h1>
+						<button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+					</div>
+					<div class="modal-body">
+						<strong>One or more pieces of equipment have already been booked for this timeslot</strong>.
+						<br><br>
+						Prepper has determined that there are an insufficient number of some pieces of equipment to fulfill this booking.
+						You may still submit this booking, but please be aware of the potential conflicts listed below.
+						<br>
+						<br>
+
+						<table class="table table-sm" id="clashes-table">
+							<thead>
+								<tr>
+									<th scope="col">Equipment</th>
+									<th scope="col">Booked By</th>
+									<th scope="col">Booked For</th>
+									<th scope="col">Timings</th>
+									<th scope="col">You Booked</th>
+									<th scope="col">They Booked</th>
+									<th scope="col">Supply Quantity</th>
+									<th scope="col">Net Quantity</th>
+								</tr>
+							</thead>
+
+							<tbody id="clashesBody">
+							</tbody>
+						</table>
+					</div>
+					<div class="modal-footer">
+						<button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Amend</button>
+						<button type="button" class="btn btn-warning" onclick="end_clashes()">Confirm Booking</button>
+					</div>
+				</div>
+			</div>
+		</div>
 
 		<div class="container container-fluid mt-3">
 			<h1>Timings for {{.Activity.Title}}</h1>
@@ -32,7 +79,7 @@
 
 				<div class="tab-content p-4" id="nav-tabContent">
 					<div class="tab-pane fade show active" id="manual" role="tabpanel" tabindex="0">
-						<form action="/book/{{.Activity.ID}}/submit" method="GET">
+						<form action="/book/{{.Activity.ID}}/submit" method="GET" id="manual-form">
 							<!-- Used to select type serverside -->
 							<input type="hidden" name="manual" value="yes">
 
@@ -82,7 +129,7 @@
 
 							<div class="row">
 								<div class="col">
-									<button type="submit" class="btn btn-primary form-control">Book</button>
+									<button type="submit" class="btn btn-primary form-control" onclick="validate_manual(event)">Book</button>
 								</div>
 							</div>
 						</form>
@@ -150,7 +197,7 @@
 																		{{end}}
 																	{{end}}
 
-																	<button type="submit" class="btn text-primary fake-link">
+																	<button type="submit" class="btn text-primary fake-link" onclick="validate_timetable(event)">
 																			{{if .PeriodCode}}
 																				{{.PeriodCode}}
 																				<br>

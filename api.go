@@ -330,3 +330,150 @@ func handleAPIPeriod(c *gin.Context) {
 
 	c.JSON(http.StatusOK, p)
 }
+
+type clashReference struct {
+	EquipmentName   string `json:"equipment_name"`
+	TotalQuantity   uint   `json:"total_quantity"`
+	NetQuantity     int    `json:"net_quantity"`
+	YouQuantity     uint   `json:"you_quantity"`
+	ClashQuantity   uint   `json:"clash_quantity"`
+	BookingID       uint   `json:"booking_id"`
+	BookingUser     string `json:"booking_user"`
+	BookingActivity string `json:"booking_activity"`
+	BookingStarts   string `json:"booking_starts"`
+	BookingEnds     string `json:"booking_ends"`
+}
+
+// handleAPIClashes is the handler for "/api/clashes".
+//
+// Returns a JSON array of all the clashes which are detected for the two query
+// parameter datetimes.
+func handleAPIClashes(c *gin.Context) {
+	clashes := make([]clashReference, 0, 5)
+
+	var err error
+	var date time.Time
+
+	_, manual := c.GetQuery("manual")
+	if manual {
+		sdate := c.Query("date")
+		date, err = time.Parse(dateFormat, sdate)
+		if err != nil {
+			c.JSON(http.StatusBadRequest, gin.H{
+				"error":   "Bad Date Format",
+				"message": err.Error(),
+			})
+			return
+		}
+	} else {
+		wcp := c.Query("week_commencing")
+		wstart, err := time.Parse(dateFormat, wcp)
+		if err != nil {
+			c.JSON(http.StatusBadRequest, gin.H{
+				"error":   "Bad date format",
+				"message": err.Error(),
+			})
+			return
+		}
+		wday := parseDay(c.Query("day"))
+
+		date = weekCommencing(wstart).Truncate(24 * time.Hour).Add((24 * time.Hour) * time.Duration(wday))
+	}
+
+	sstime, setime := c.Query("start_time"), c.Query("end_time")
+	stime, err := time.Parse(timeFormat, sstime)
+	if err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{
+			"error":   "Bad start time format",
+			"message": err.Error(),
+		})
+		return
+	}
+
+	etime, err := time.Parse(timeFormat, setime)
+	if err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{
+			"error":   "Bad end time format",
+			"message": err.Error(),
+		})
+		return
+	}
+
+	// Handle zone offsets as HTML does not supply them
+	_, off := time.Now().Zone()
+	stime = stime.Add(time.Duration(off) * -time.Second).In(time.Local).Add(2 * time.Minute)
+	etime = etime.Add(time.Duration(off) * -time.Second).In(time.Local).Add(2 * time.Minute)
+
+	// Start/end time is the date + the offset from the day boundary in stime/etime.
+	start := date.Add(time.Hour * time.Duration(stime.Hour())).Add(time.Minute * time.Duration(stime.Minute()))
+	end := date.Add(time.Hour * time.Duration(etime.Hour())).Add(time.Minute * time.Duration(etime.Minute()))
+
+	set, err := NewItemInformation(c.Request)
+	if err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{
+			"error":   "Internal Error",
+			"message": err.Error(),
+		})
+		return
+	}
+
+	for _, i := range set {
+		i.Item, err = data.GetEquipmentItem(Database, i.Item.ID)
+		if err != nil {
+			c.JSON(http.StatusInternalServerError, gin.H{
+				"error":   "Internal Error",
+				"message": err.Error(),
+			})
+			return
+		}
+
+		qty, err := i.Item.NetQuantity(start, end)
+		if err != nil {
+			c.JSON(http.StatusInternalServerError, gin.H{
+				"error":   "Internal Error",
+				"message": "SQL Error" + err.Error(),
+			})
+			return
+		}
+
+		// Clash detected!
+		if qty < 0 || uint(qty) < i.Quantity {
+			if qty > 0 {
+				qty -= int(i.Quantity)
+			}
+
+			bks, err := i.Item.Bookings(start, end)
+			if err != nil {
+				c.JSON(http.StatusInternalServerError, gin.H{
+					"error":   "Internal Error",
+					"message": "SQL Error" + err.Error(),
+				})
+				return
+			}
+
+			for _, b := range bks {
+				cl := clashReference{
+					EquipmentName:   i.Item.Name,
+					TotalQuantity:   i.Item.Quantity,
+					NetQuantity:     qty,
+					YouQuantity:     i.Quantity,
+					BookingID:       b.ID,
+					BookingUser:     b.Owner.Username,
+					BookingActivity: b.Activity.Parent(Database).Title,
+					BookingStarts:   b.StartTime.Format(time.TimeOnly),
+					BookingEnds:     b.EndTime.Format(time.TimeOnly),
+				}
+
+				for _, eq := range b.Activity.Equipment {
+					if eq.ItemID == i.Item.ID {
+						cl.ClashQuantity = eq.Quantity
+					}
+				}
+
+				clashes = append(clashes, cl)
+			}
+		}
+	}
+
+	c.JSON(http.StatusOK, clashes)
+}

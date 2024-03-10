@@ -1,6 +1,7 @@
 package main
 
 import (
+	"encoding/json"
 	"errors"
 	"fmt"
 	"net/http"
@@ -307,6 +308,12 @@ func handleBookTimings(c *gin.Context) {
 		return
 	}
 
+	setjson, err := json.Marshal([]data.EquipmentSet(set))
+	if err != nil {
+		internalError(c, err)
+		return
+	}
+
 	var tbl *isams.UserTimetable
 	var tbla [][]struct{}
 	if Config.HasISAMS() && ddat.User.IsamsID != nil {
@@ -330,11 +337,12 @@ func handleBookTimings(c *gin.Context) {
 		DashboardData
 		Activity       data.Activity
 		Items          ItemInformation
+		ItemsJSON      string
 		ISAMS          bool
 		Timetable      *isams.UserTimetable
 		TimetableLoop  [][]struct{}
 		WeekCommencing time.Time
-	}{ddat, act, set, Config.HasISAMS(), tbl, tbla, wc}
+	}{ddat, act, set, string(setjson), Config.HasISAMS(), tbl, tbla, wc}
 	c.HTML(http.StatusOK, "book-timings.gohtml", dat)
 }
 
