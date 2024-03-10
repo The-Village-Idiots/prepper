@@ -18,7 +18,7 @@
 			<form class="mt-2" method="POST" {{if .Postpone}}action="/book/booking/{{.Booking.ID}}/amend?postpone"{{end}}>
 				<p>
 					You are amending the booking for ticket <strong>#{{.Booking.ID}}</strong>.
-					{{if not .Postpone}}You can further amend this booking until {{.LastTime.Format "02 Jan 06 15:04 MST"}}, or when it has been processed by a technician.{{end}}
+					{{if not .Postpone}}You can further amend this booking until {{.LastTime.Format "02 Jan 06 15:04 MST"}}, and before it has been processed by a technician.{{end}}
 					{{if .Booking.Status.Progress}}
 						This booking was already in the process of preparation.
 						Your technician will be notified but, as a result, your booking may take longer to process.
