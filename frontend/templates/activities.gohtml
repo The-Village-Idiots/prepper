@@ -42,7 +42,6 @@
 				<table class="table table-striped" id="itemsTable">
 					<thead>
 						<tr>
-							<th scope="col">#</th>
 							<th scope="col">Name</th>
 							<th scope="col">Description</th>
 							<th scope="col">Category</th>
@@ -55,7 +54,6 @@
 					<tbody>
 						{{range .Activities}}
 							<tr class="item-searchable">
-								<td>{{.ID}}</td>
 								<td>{{.Title}}</td>
 								<td class="text-truncate d-none d-lg-table-cell" style="max-width: 370px">{{.Description}}</td>
 								<td>{{.Category}}</td>
