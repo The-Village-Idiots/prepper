@@ -10,6 +10,7 @@ import (
 	"gorm.io/gorm"
 
 	"github.com/ejv2/prepper/data"
+	"github.com/ejv2/prepper/session"
 )
 
 // handleActivities is the handler for "/activity/".
@@ -46,20 +47,45 @@ func handleActivities(c *gin.Context) {
 	c.HTML(http.StatusOK, "activities.gohtml", dat)
 }
 
+// activityEditor shows the activity editor HTML page.
+func activityEditor(c *gin.Context, activity data.Activity, s session.Session) {
+	ddat, err := NewDashboardData(s)
+	if err != nil {
+		internalError(c, err)
+		return
+	}
+
+	eq, err := data.GetEquipment(Database)
+	if err != nil {
+		internalError(c, err)
+		return
+	}
+
+	c.HTML(http.StatusOK, "activity-edit.gohtml", struct {
+		DashboardData
+		Activity  data.Activity
+		Equipment []data.EquipmentItem
+	}{ddat, activity, eq})
+}
+
 // handleActivityNew is the handler for "/activity/new".
 func handleActivityNew(c *gin.Context) {
+	s := Sessions.Start(c)
+	defer s.Update()
+
+	newact, err := data.NewActivity(Database, s.UserID)
+	if err != nil {
+		internalError(c, err)
+		return
+	}
+
+	activityEditor(c, newact, s)
 }
 
 // handleActivityEdit is the handler for GET "/activity/[ID]/edit".
 func handleActivityEdit(c *gin.Context) {
 	s := Sessions.Start(c)
 	defer s.Update()
-
-	ddat, err := NewDashboardData(s)
-	if err != nil {
-		internalError(c, err)
-		return
-	}
 
 	actsid := c.Param("activity")
 	actid, err := strconv.ParseUint(actsid, 10, 32)
@@ -74,17 +100,7 @@ func handleActivityEdit(c *gin.Context) {
 		return
 	}
 
-	eq, err := data.GetEquipment(Database)
-	if err != nil {
-		internalError(c, err)
-		return
-	}
-
-	c.HTML(http.StatusOK, "activity-edit.gohtml", struct {
-		DashboardData
-		Activity  data.Activity
-		Equipment []data.EquipmentItem
-	}{ddat, act, eq})
+	activityEditor(c, act, s)
 }
 
 // handleActivityDoEdit is the handler for POST "/activity/[ID]/edit".

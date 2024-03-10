@@ -74,7 +74,7 @@
 			</tr>
 		</template>
 
-		<form method="POST">
+		<form method="POST" action="/activity/{{.Activity.ID}}/edit">
 			<div class="container container-fluid mt-3">
 				<h1>Edit Activity {{.Activity.Title}}</h1>
 				<hr>

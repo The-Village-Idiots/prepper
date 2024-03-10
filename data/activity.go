@@ -7,10 +7,22 @@ import (
 	"gorm.io/gorm"
 )
 
+// newActivityPrefix is the prefix used for new activity names.
+const newActivityPrefix = "newactivity"
+
+var defaultActivity = Activity{
+	Title:       "newactivity",
+	Description: "Blank new activity",
+	Category:    "misc",
+	Temporary:   false,
+}
+
 // Activity retrieval errors.
 var (
 	ErrInvalidActivityID = errors.New("invalid activity ID")
 	ErrActivityNotFound  = errors.New("activity not found")
+
+	ErrActivitySQL = errors.New("sql error")
 )
 
 // An Activity is the details for a booking. It contains needed equipment and
@@ -39,6 +51,36 @@ type Activity struct {
 	// Used to link to individual EquipmentItem(s).
 	// Link via foreign key in EquipmentSet.
 	Equipment []EquipmentSet
+}
+
+// NewActivity creates and returns a brand new activity with blank, default
+// information, but which will be valid for the user identified by ownerID to
+// edit.
+func NewActivity(db *gorm.DB, ownerID uint) (Activity, error) {
+	// Generate new activity name
+	// Loop until we find a suffix which doesn't exist
+	num := 1
+	for {
+		match := Activity{Title: fmt.Sprint(newActivityPrefix, num)}
+		if err := db.Where(&match).First(&match).Error; err != nil {
+			if errors.Is(err, gorm.ErrRecordNotFound) {
+				break
+			}
+
+			return match, fmt.Errorf("new activity: %w: %s", ErrActivitySQL, err.Error())
+		}
+	}
+
+	// Create activity
+	tmpl := defaultActivity
+	tmpl.Title = fmt.Sprint(newActivityPrefix, num)
+	tmpl.OwnerID = ownerID
+
+	if err := db.Create(&tmpl).Error; err != nil {
+		return tmpl, fmt.Errorf("new activity: %w: %s", ErrActivitySQL, err.Error())
+	}
+
+	return tmpl, nil
 }
 
 // Temp returns this activity modified to be suitable for use as a temporary
