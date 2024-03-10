@@ -2,7 +2,7 @@
 
 <html>
 	<head>
-		{{template "head.gohtml" (println "Booking \"" .Activity.Title "\"")}}
+		{{template "head.gohtml" (print "Edit Activity \"" .Activity.Title "\"")}}
 
 		<script>
 			let count = {{len .Activity.Equipment}} + 1;
