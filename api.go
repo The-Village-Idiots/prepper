@@ -438,7 +438,7 @@ func handleAPIClashes(c *gin.Context) {
 
 		// Clash detected!
 		if qty < 0 || uint(qty) < i.Quantity {
-			if qty > 0 {
+			if qty >= 0 {
 				qty -= int(i.Quantity)
 			}
 

@@ -197,7 +197,7 @@
 																		{{end}}
 																	{{end}}
 
-																	<button type="submit" class="btn text-primary fake-link" onclick="validate_timetable(event, {{.Day}}, {{.StartTime.Format "15:04"}}, {{.EndTime.Format "15:04"}}, {{if .Room}}{{.Room.Name}}{{else}}''{{end}})">
+																	<button type="submit" class="btn text-primary fake-link" onclick="validate_timetable(event, '{{.Day}}', '{{.StartTime.Format "15:04"}}', '{{.EndTime.Format "15:04"}}')">
 																			{{if .PeriodCode}}
 																				{{.PeriodCode}}
 																				<br>

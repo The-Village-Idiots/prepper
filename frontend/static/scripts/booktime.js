@@ -32,6 +32,11 @@ function update_commencing()
  */
 function show_clashes(clashes)
 {
+	if (clashes.length == 0) {
+		end_clashes();
+		return;
+	}
+
 	/* clear out existing clashes */
 	$("#clashesBody").empty();
 
@@ -62,6 +67,19 @@ function end_clashes()
 	$(submitbtn).closest("form").submit();
 }
 
+/*
+ * format_items returns the URI encoded items data with base as the base URL to append to
+ */
+function format_items(base)
+{
+	let uri = base;
+	items.forEach((item) => {
+		uri += "&qty_"+item.ItemID+"="+item.Quantity;
+	});
+
+	return uri;
+}
+
 function validate_manual(ev)
 {
 	ev.preventDefault();
@@ -76,10 +94,7 @@ function validate_manual(ev)
 	let stime = $("#stime-input")[0].value;
 	let etime = $("#etime-input")[0].value;
 
-	let uri = clashes_endpoint + "?date="+encodeURIComponent(date) + "&start_time="+encodeURIComponent(stime) + "&end_time="+encodeURIComponent(etime) + "&manual=true";
-	items.forEach((item) => {
-		uri += "&qty_"+item.ItemID+"="+item.Quantity;
-	});
+	let uri = format_items(clashes_endpoint + "?date="+encodeURIComponent(date) + "&start_time="+encodeURIComponent(stime) + "&end_time="+encodeURIComponent(etime) + "&manual=true");
 
 	var req = new XMLHttpRequest();
 	req.open("GET", uri, true);
@@ -88,10 +103,6 @@ function validate_manual(ev)
 			if (this.status == 200) {
 				let dat = JSON.parse(this.responseText);
 
-				if (dat.length == 0) {
-					return;
-				}
-
 				show_clashes(dat);
 			}
 		}
@@ -99,9 +110,28 @@ function validate_manual(ev)
 	req.send();
 }
 
-function validate_timetable(ev)
+function validate_timetable(ev, day, start, end)
 {
 	ev.preventDefault(true);
+	submitbtn = ev.target;
+
+	let weekinput = $(ev.target).closest(".week_commencing_input");
+	let week = weekinput[0].value;
+
+	/* note lack of manual query parameter */
+	let uri = format_items(clashes_endpoint + "?week_commencing="+week + "&day="+day + "&start_time="+start + "&end_time="+end);
+	var req = new XMLHttpRequest();
+	req.open("GET", uri, true);
+	req.onreadystatechange = function() {
+		if (this.readyState == 4) {
+			if (this.status == 200) {
+				let dat = JSON.parse(this.responseText);
+
+				show_clashes(dat);
+			}
+		}
+	}
+	req.send();
 }
 
 function testmodal()
