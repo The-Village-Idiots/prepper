@@ -3,7 +3,7 @@ package main
 import "fmt"
 
 const (
-	VersionMajor = 1
+	VersionMajor = 2
 	VersionMinor = 0
 	VersionPatch = 0
 )
