@@ -1,0 +1,4 @@
+#!/bin/sh
+# flist - generate a source code file listing for the write up
+# Copyright (C) Ethan Marshall - 2024
+find . -name ".git" -prune -or -type f -not -name "*README*" -print | sed "s/^\.\///"

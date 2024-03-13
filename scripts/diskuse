@@ -1,0 +1,4 @@
+#!/bin/sh
+# diskuse - find the disk usage in MB of the project source code
+# Copyright (C) 2024 - Ethan Marshall
+du | grep -v "git" | awk 'BEGIN {sum = 0} {sum += $1} END {printf("%dMB\n", (sum * 512)/(1e6))}'
